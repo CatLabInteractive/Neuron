@@ -1,0 +1,21 @@
+{
+    "name": "catlabinteractive/neuron",
+    "type": "library",
+    "description": "Very light php framework. Should probably not be used.",
+    "keywords": ["framework"],
+    "homepage":"http://github.com/catlabinteractive/neuron",
+    "license": "MIT",
+    "authors" : [
+        {
+            "name": "Thijs Van der Schaeghe",
+            "email" : "info@catlab.be",
+            "homepage" : "https://www.catlab.eu/",
+            "role" : "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-0" : {
+            "Neuron" : "src"
+        }
+    }
+}
