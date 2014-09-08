@@ -5,7 +5,6 @@ namespace Neuron;
 
 use Neuron\Models\User;
 use Neuron\SessionHandlers\SessionHandler;
-use bmgroup\Cloudwalkers\Models\Logger;
 
 class Session
 {
@@ -48,8 +47,6 @@ class Session
 	 */
 	public function connect ($sessionId = null)
 	{
-		//Logger::getInstance ()->log ("Starting session with sessionID " . $sessionId, false, 'red');
-		
 		if (!isset ($this->handler))
 		{
 			$this->handler = new \Neuron\SessionHandlers\DbSessionHandler ();
@@ -71,8 +68,6 @@ class Session
 
 	public function disconnect ()
 	{
-		//Logger::getInstance ()->log ("Closing session with sessionID " . session_id (), false, 'red');
-		
 		if ($this->handler)
 		{
 			$this->handler->stop ();
