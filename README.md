@@ -1,4 +1,5 @@
 Neuron
 ======
 
-Very basic php framework.
+A very light php framework.
+Will probably not help you much.
