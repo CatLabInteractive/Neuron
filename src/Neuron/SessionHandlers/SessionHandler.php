@@ -8,8 +8,7 @@
 
 namespace Neuron\SessionHandlers;
 
-use bmgroup\Cloudwalkers\Models\Logger;
-use Exception;
+use Neuron\Models\Logger;
 use Neuron\Core\Tools;
 
 abstract class SessionHandler
