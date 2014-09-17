@@ -143,14 +143,17 @@ class Session
 		return $user;
 	}
 
-	public function logout ()
+	public function logout ($destroySession = true)
 	{
 		$_SESSION['user'] = null;
 		$this->user = null;
 
 		EventManager::getInstance ()->trigger ('signin:logout');
 
-		session_destroy ();
+		if ($destroySession)
+		{
+			$this->destroy ();
+		}
 	}
 
 	public function register (User $user)
