@@ -135,15 +135,19 @@ class Logger
 		flush();
 	}
 
-	/**
-	 * Flush everything down the drain.
-	 */
-	public function flush ()
+    /**
+     * Flush everything down the drain.
+     * @param bool $flushDatabase
+     */
+    public function flush ($flushDatabase = true)
 	{
 		$this->temporary = array ();
 		$this->temporarystart = array ();
 		$this->log = array ();
 		$this->start = microtime(true);
+
+        // Also flush database log
+        \Neuron\DB\Database::getInstance ()->flushLog ();
 	}
 
 	public function getLogs ()
