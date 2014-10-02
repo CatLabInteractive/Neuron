@@ -68,58 +68,40 @@ class Tools
 		
 		elseif ($type == 'varchar')
 		{
-			return true;
+			return self::isValidUTF8 ($value);
 		}
 		
 		elseif ($type == 'password')
 		{
-			return strlen ($value) > 2;
+			return self::isValidUTF8 ($value) && strlen ($value) > 2;
 		}
 		
 		elseif ($type == 'email')
 		{
 			//return (bool)preg_match("/^[_a-z0-9-]+(\.[_a-z0-9\+\-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,})$/i", $value);
-			return filter_var ($value, FILTER_VALIDATE_EMAIL) ? true : false;
+			return self::isValidUTF8 ($value) && filter_var ($value, FILTER_VALIDATE_EMAIL) ? true : false;
 		}
 		
 		elseif ($type == 'username')
 		{
-			return (bool)preg_match ('/^[a-zA-Z0-9_]{3,20}$/', $value);
-		}
-		
-		elseif ($type == 'village')
-		{
-			$chk = preg_match ('/^[a-zA-Z0-9\' ]{3,40}$/', $value);
-			$value = trim ($value);
-			$notempty = !empty ($value);
-			$chk = $chk && $notempty;
-			return $chk;
-		}
-
-		elseif ($type == 'unitname')
-		{
-			$chk = preg_match ('/^[a-zA-Z0-9 ]{3,20}$/', $value);
-			$value = trim ($value);
-			$notempty = !empty ($value);
-			$chk = $chk && $notempty;
-			return $chk;
+			return self::isValidUTF8 ($value) && (bool)preg_match ('/^[a-zA-Z0-9_]{3,20}$/', $value);
 		}
 
 		elseif ($type == 'date')
 		{
 			$time = explode ('-', $value);
-			return (count ($time) == 3);
+			return self::isValidUTF8 ($value) && (count ($time) == 3);
 		}
 		
 		elseif ($type == 'md5')
 		{
-			return strlen ($value) == 32;
+			return self::isValidUTF8 ($value) && strlen ($value) == 32;
 		}
 
 		elseif ($type == 'url')
 		{
 			$regex = '/((https?:\/\/|[w]{3})?[\w-]+(\.[\w-]+)+\.?(:\d+)?(\/\S*)?)/i';
-			return (bool)preg_match($regex, $value);
+			return self::isValidUTF8 ($value) && (bool)preg_match($regex, $value);
 
 			/*
 
@@ -152,11 +134,21 @@ class Tools
 		else {
 		
 			return false;
-			echo 'fout: '.$type;
+			//echo 'fout: '.$type;
 		
 		}
 
 	}
+
+    /**
+     * Check if a string is valid UTF8
+     * @param $str
+     * @return bool
+     */
+    public static function isValidUTF8 ($str)
+    {
+        return (bool) preg_match('//u', $str);
+    }
 
 	public static function putIntoText ($text, $ar = array(), $delimiter = '@@') 
 	{
