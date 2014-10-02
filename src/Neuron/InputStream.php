@@ -8,6 +8,8 @@
 
 namespace Neuron;
 
+use Neuron\Core\Tools;
+
 class InputStream {
 
 	private $input;
@@ -37,4 +39,13 @@ class InputStream {
 	{
 		$this->input = $input;
 	}
+
+    /**
+     * Check if the inputstream contains a valid utf8 string.
+     * @return bool
+     */
+    public static function isValidUTF8 ()
+    {
+        return Tools::isValidUTF8 (self::getInstance ()->getInput ());
+    }
 } 
