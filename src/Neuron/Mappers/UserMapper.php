@@ -10,7 +10,11 @@ use Neuron\Models\User;
 
 class UserMapper
 {
-	public function getFromId ($id)
+    /**
+     * @param $id
+     * @return User|null
+     */
+    public function getFromId ($id)
 	{
 		$db = Database::getInstance ();
 
@@ -30,26 +34,6 @@ class UserMapper
 			return $data[0];
 		}
 		return null;
-	}
-
-	public function getAllFromReseller ($id)
-	{
-		$db = Database::getInstance ();
-
-		$data = $db->query
-		("
-			SELECT
-				*
-			FROM
-				users
-			WHERE
-				u_reseller_id = '{$db->escape ($id)}'
-		");
-
-		$data = $this->getObjectsFromData ($data);
-
-		return $data;
-
 	}
 
 	/**
@@ -85,7 +69,11 @@ class UserMapper
 		return $this->getObjectsFromData ($data);
 	}
 
-	public function getFromEmail ($email)
+    /**
+     * @param $email
+     * @return User|null
+     */
+    public function getFromEmail ($email)
 	{
 		$db = Database::getInstance ();
 
@@ -107,7 +95,12 @@ class UserMapper
 		return null;
 	}
 
-	public function getFromLogin ($email, $password)
+    /**
+     * @param $email
+     * @param $password
+     * @return User|null
+     */
+    public function getFromLogin ($email, $password)
 	{
 		$db = Database::getInstance ();
 
@@ -141,7 +134,11 @@ class UserMapper
 		return array (md5 ($password), $salt);
 	}
 
-	protected function prepareFields (User $user)
+    /**
+     * @param User $user
+     * @return array
+     */
+    protected function prepareFields (User $user)
 	{
 		//  Hash the password & add some salt.
 		$out = array ();
@@ -196,7 +193,11 @@ class UserMapper
 		return $out;
 	}
 
-	public function create (User $user)
+    /**
+     * @param User $user
+     * @return User
+     */
+    public function create (User $user)
 	{
 		$query = Query::insert ('users', $this->prepareFields ($user));
 		$id = $query->execute ();
@@ -209,7 +210,10 @@ class UserMapper
 		return $this->getFromId ($id);
 	}
 
-	public function update (User $user)
+    /**
+     * @param User $user
+     */
+    public function update (User $user)
 	{
 		$where = array (
 			'u_id' => $user->getId ()
@@ -219,7 +223,12 @@ class UserMapper
 		$query->execute ();
 	}
 
-	public function checkPassword (User $user, $password)
+    /**
+     * @param User $user
+     * @param $password
+     * @return bool
+     */
+    public function checkPassword (User $user, $password)
 	{
 		$db = Database::getInstance ();
 
@@ -237,7 +246,11 @@ class UserMapper
 		return count ($chk) > 0;
 	}
 
-	public function hasPassword (User $user)
+    /**
+     * @param User $user
+     * @return bool
+     */
+    public function hasPassword (User $user)
 	{
 		$db = Database::getInstance ();
 
@@ -255,7 +268,10 @@ class UserMapper
 		return count ($chk) > 0;
 	}
 
-	public function removeExpiredPasswordResetTokens ()
+    /**
+     *
+     */
+    public function removeExpiredPasswordResetTokens ()
 	{
 		$db = Database::getInstance ();
 
@@ -268,7 +284,12 @@ class UserMapper
 		");
 	}
 
-	public function addPasswordResetToken (User $user, $token, $ip)
+    /**
+     * @param User $user
+     * @param $token
+     * @param $ip
+     */
+    public function addPasswordResetToken (User $user, $token, $ip)
 	{
 		$this->removeExpiredPasswordResetTokens ();
 
@@ -288,7 +309,11 @@ class UserMapper
 		");
 	}
 
-	public function getPasswordResetTokens (User $user)
+    /**
+     * @param User $user
+     * @return array
+     */
+    public function getPasswordResetTokens (User $user)
 	{
 		$db = Database::getInstance ();
 
@@ -317,7 +342,11 @@ class UserMapper
 		return $out;
 	}
 
-	public function getObjectsFromData ($data)
+    /**
+     * @param $data
+     * @return User[]
+     */
+    public function getObjectsFromData ($data)
 	{
 		$out = array ();
 		foreach ($data as $v)
@@ -327,13 +356,20 @@ class UserMapper
 		return $out;
 	}
 
-	public function getObjectClassname ()
+    /**
+     * Return the name of the models that will be instanciated
+     * @return string
+     */
+    public function getObjectClassname ()
 	{
 		return 'Neuron\Models\User';
 	}
 
-
-	public function getSingle ($data)
+    /**
+     * @param $data
+     * @return User|null
+     */
+    public function getSingle ($data)
 	{
 		if (count ($data) > 0)
 		{
