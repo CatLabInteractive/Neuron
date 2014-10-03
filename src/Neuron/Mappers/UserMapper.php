@@ -189,6 +189,7 @@ class UserMapper
 		}
 
 		$out['u_isEmailValidated'] = 0;
+        $out['updated_at'] = array (time (), Query::PARAM_DATE);
 
 		return $out;
 	}
@@ -199,7 +200,11 @@ class UserMapper
      */
     public function create (User $user)
 	{
-		$query = Query::insert ('users', $this->prepareFields ($user));
+        $data = $this->prepareFields ($user);
+
+        $data['created_at'] = array (time (), Query::PARAM_DATE);
+
+		$query = Query::insert ('users', $data);
 		$id = $query->execute ();
 
 		// Set ID in object
