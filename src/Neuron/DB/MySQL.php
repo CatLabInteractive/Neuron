@@ -124,7 +124,7 @@ class MySQL extends Database
 	/*
 		Execute a query and return a result
 	*/
-	public function query ($sSQL)
+	public function query ($sSQL, $log = true)
 	{
 		$start = microtime (true);
 		
@@ -136,7 +136,10 @@ class MySQL extends Database
 		$result = $this->connection->query (trim ($sSQL));
 		
 		$duration = microtime (true) - $start;
-		$this->addQueryLog ($sSQL, $duration);
+
+		if ($log) {
+			$this->addQueryLog($sSQL, $duration);
+		}
 		
 		if (!$result)
 		{
@@ -181,13 +184,13 @@ class MySQL extends Database
 	
 	public function fromUnixtime ($timestamp)
 	{
-		$query = $this->query ("SELECT FROM_UNIXTIME('{$timestamp}') AS datum");
+		$query = $this->query ("SELECT FROM_UNIXTIME('{$timestamp}') AS datum", false);
 		return $query[0]['datum'];
 	}
 	
 	public function toUnixtime ($date)
 	{
-		$query = $this->query ("SELECT UNIX_TIMESTAMP('{$date}') AS datum");
+		$query = $this->query ("SELECT UNIX_TIMESTAMP('{$date}') AS datum", false);
 		return $query[0]['datum'];
 	}
 }
