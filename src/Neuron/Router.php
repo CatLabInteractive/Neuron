@@ -1,5 +1,29 @@
 <?php
 
+/*
+
+Copyright (c) 2013 Bram(us) Van Damme - http://www.bram.us/
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is furnished
+to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+ */
+
 /**
  * @author		Bram(us) Van Damme <bramus@bram.us>
  * @copyright	Copyright (c), 2013 Bram(us) Van Damme
@@ -249,7 +273,7 @@ class Router {
         }
         // If a route was handled, perform the finish callback (if any)
         else {
-            if ($callback) $callback();
+            if ($callback && is_callable ($callback)) $callback();
         }
 
         // If it originally was a HEAD request, clean up after ourselves by emptying the output buffer
@@ -309,7 +333,7 @@ class Router {
                 }, $matches, array_keys($matches));
 
                 // call the handling function with the URL parameters
-                call_user_func_array($route['fn'], $params);
+                $this->handleOutput (call_user_func_array($route['fn'], $params));
 
                 // yay!
                 $numHandled++;
@@ -324,6 +348,24 @@ class Router {
         // Return the number of routes handled
         return $numHandled;
 
+    }
+
+    private function handleOutput ($output)
+    {
+        if (!$output)
+        {
+            // Nothing to do.
+            return;
+        }
+
+        if ($output instanceof \Neuron\Net\Response)
+        {
+            $output->output ();
+        }
+
+        else {
+            echo $output;
+        }
     }
 
 
