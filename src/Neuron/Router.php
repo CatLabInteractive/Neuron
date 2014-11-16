@@ -107,6 +107,10 @@ class Router {
 
     }
 
+    public function controller ($pattern, \Neuron\FrontController $controller)
+    {
+
+    }
 
     /**
      * Shorthand for a route accessed using GET
