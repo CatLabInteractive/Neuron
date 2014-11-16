@@ -173,7 +173,6 @@ class Router {
         $this->match('OPTIONS', $pattern, $fn);
     }
 
-
     /**
      * Mounts a collection of callables onto a base route
      *
