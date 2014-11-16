@@ -107,7 +107,7 @@ class Router {
 
     }
 
-    public function controller ($pattern, \Neuron\FrontController $controller)
+    public function module ($pattern, \Neuron\FrontController $controller)
     {
 
     }
