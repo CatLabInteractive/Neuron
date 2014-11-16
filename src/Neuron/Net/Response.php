@@ -121,11 +121,31 @@ class Response
 
 	private $output;
 
-	public function redirect ($url)
+	/**
+	 * Create a redirect response.
+	 * @param $url
+	 * @return Response
+	 */
+	public static function redirect ($url)
+	{
+		$response = new self ();
+		$response->setRedirect ($url);
+
+		return $response;
+	}
+
+	/**
+	 * Set a response to be a redirect.
+	 * @param $url
+	 * @return $this
+	 */
+	public function setRedirect ($url)
 	{
 		$this->setHeader ('Location', $url);
 		$this->setStatus (302);
 		$this->setData (array ('message' => 'Redirecting to ' . $url));
+
+		return $this;
 	}
 
 	public function getJSONData ()

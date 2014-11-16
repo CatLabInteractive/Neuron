@@ -29,5 +29,7 @@ class Module
         $router->get ($prefix . '/doSomething', 'TestController@doSomething');
         $router->get ($prefix . '/foo', 'TestController@foo');
         $router->get ($prefix . '/template', 'TestController@template');
+
+        $router->get ($prefix . '/', 'TestController@home');
     }
 }

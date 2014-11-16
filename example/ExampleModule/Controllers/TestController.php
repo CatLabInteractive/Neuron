@@ -30,4 +30,13 @@ class TestController {
         return $response;
     }
 
+    public function home ()
+    {
+        $data = array (
+            'name' => 'Test variable ' . mt_rand (0, 5000)
+        );
+
+        $response = \Neuron\Net\Response::template ('example/moduleexample.phpt', $data);
+        return $response;
+    }
 }

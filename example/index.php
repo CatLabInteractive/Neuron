@@ -29,6 +29,12 @@ $router->get ('/view', function () {
     return \Neuron\Net\Response::template ('example.phpt');
 });
 
+$router->get ('/', function () {
+    $response = new \Neuron\Net\Response ();
+    $response->redirect (\Neuron\URLBuilder::getURL ('module'));
+    return $response;
+});
+
 // Set module.
 $router->module ('/module', new Module ());
 

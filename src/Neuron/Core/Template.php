@@ -73,10 +73,31 @@ class Template
 	private $objText = null;
 
 	private $layoutRender = null;
+
+	// Yea, ugly. I know.
+	static $shares = array ();
 	
 	public static function load ()
 	{
 	
+	}
+
+	/**
+	 * Clear all shared variables.
+	 */
+	public static function clearShares ()
+	{
+		self::$shares = array ();
+	}
+
+	/**
+	 * Set a variable that will be shared across all templates.
+	 * @param $name
+	 * @param $value
+	 */
+	public static function share ($name, $value)
+	{
+		self::$shares[$name] = $value;
 	}
 
 	/**
@@ -234,7 +255,7 @@ class Template
 
 	public function parse ($template, $text = null)
 	{
-		if (! $filenames = $this->getFilenames ($template))
+		if (! $ctlbtmpltfiles = $this->getFilenames ($template))
 		{
 			$out = '<h1>Template not found</h1>';
 			$out .= '<p>The system could not find template "'.$template.'"</p>';
@@ -242,12 +263,17 @@ class Template
 		}
 
 		ob_start ();
-		
-		foreach ($this->values as $k => $v) {
-			$$k = $v;
+
+		foreach (self::$shares as $k => $v)
+		{
+			${$k} = $v;
 		}
 
-		include $filenames[0];
+		foreach ($this->values as $k => $v) {
+			${$k} = $v;
+		}
+
+		include $ctlbtmpltfiles[0];
 		
 		$val = ob_get_contents();
 
@@ -289,24 +315,25 @@ class Template
 	 */
 	private function combine ($template)
 	{
-		$files = $this->getFilenames ($template, true);
-		if ($files)
-		{
-			ob_start ();
+		ob_start();
 
-			foreach ($this->values as $k => $v) {
-				$$k = $v;
-			}
-
-			foreach ($files as $file) {
-				include $file;
-			}
-
-			$val = ob_get_contents();
-			ob_end_clean();
-
-			return $val;
+		foreach (self::$shares as $k => $v) {
+			${$k} = $v;
 		}
-		return "";
+
+		foreach ($this->values as $k => $v) {
+			${$k} = $v;
+		}
+
+		if ($ctlbtmpltfiles = $this->getFilenames($template, true)) {
+			foreach ($ctlbtmpltfiles as $ctlbtmpltfile) {
+				include $ctlbtmpltfile;
+			}
+		}
+
+		$val = ob_get_contents();
+		ob_end_clean();
+
+		return $val;
 	}
 }

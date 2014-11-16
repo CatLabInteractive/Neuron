@@ -20,6 +20,7 @@ class Environment {
 		\Neuron\Session::getInstance ()->disconnect ();
 		\Neuron\Session::clearInstance ();
 		\Neuron\FrontController::destroy ();
+		\Neuron\Core\Template::clearShares ();
 	}
 	
 } 

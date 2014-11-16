@@ -158,12 +158,20 @@ class Router {
         // Handle all routes
         $numHandled = 0;
         if (isset($this->routes[$this->method]))
-            $this->handle($this->routes[$this->method], true);
+            $numHandled = $this->handle($this->routes[$this->method], true);
 
         // If no route was handled, trigger the 404 (if any)
         if ($numHandled == 0) {
-            if ($this->notFound && is_callable($this->notFound)) call_user_func($this->notFound);
-            else header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found');
+            if ($this->notFound) {
+                //call_user_func($this->notFound);
+                $this->handleMatch ($this->notFound, array ());
+            }
+            else {
+
+                $request = \Neuron\Net\Response::template ('404.phpt');
+                $request->setStatus (404);
+                $request->output ();
+            }
         }
         // If a route was handled, perform the finish callback (if any)
         else {
@@ -196,6 +204,8 @@ class Router {
         // The current page URL
         $uri = $this->frontController->getRequest ()->getUrl ();
 
+        $numHandled = 0;
+
         // Loop all routes
         foreach ($routes as $route) {
 
@@ -225,7 +235,7 @@ class Router {
                 //call_user_func_array($route['fn'], $params);
 
                 // yay!
-                //$numHandled++;
+                $numHandled ++;
 
                 // If we need to quit, then quit
                 //if ($quitAfterRun) break;
@@ -234,7 +244,7 @@ class Router {
 
         }
 
-        return false;
+        return $numHandled;
 
     }
 
