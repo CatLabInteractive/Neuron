@@ -93,7 +93,29 @@ class Response
 	{
 		$in = new self ();
 		$in->setData ($data);
-		$in->setData (new HTML ());
+		$in->setOutput (new HTML ());
+		return $in;
+	}
+
+	/**
+	 * @param $name
+	 * @param $data
+	 * @return Response
+	 */
+	public static function template ($name, $data = array ())
+	{
+		$in = new self ();
+
+		$template = new \Neuron\Core\Template ();
+
+		foreach ($data as $k => $v)
+		{
+			$template->set ($k, $v);
+		}
+
+		$in->setBody ($template->parse ($name));
+		$in->setOutput (new HTML ());
+
 		return $in;
 	}
 

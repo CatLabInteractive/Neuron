@@ -71,6 +71,8 @@ class Template
 	private $sTextSection = null;
 	
 	private $objText = null;
+
+	private $layoutRender = null;
 	
 	public static function load ()
 	{
@@ -90,21 +92,12 @@ class Template
 	* @param $path: path to add
 	* @param $prefix: only templates starting with given prefix will be loaded from this path.
 	*/
-	public static function addTemplatePath ($path, $prefix, $priorize = false)
+	public static function addTemplatePath ($path, $prefix = '', $priorize = false)
 	{
+		if (substr ($path, -1) !== '/')
+			$path .= '/';
+
 		add_to_template_path ($path, $priorize, $prefix);
-	}
-	
-	public static function getUniqueId ()
-	{
-		if (!isset ($_SESSION['tc']))
-		{
-			$_SESSION['tc'] = time ();
-		}
-		
-		$_SESSION['tc'] ++;
-		
-		return $_SESSION['tc'];
 	}
 	
 	private static function getTemplatePaths ()
@@ -136,8 +129,7 @@ class Template
 	// Intern function
 	private function getText ($sKey, $sSection = null, $sFile = null, $sDefault = null)
 	{
-		if (!isset ($this->objText))
-		{
+		if (!isset ($this->objText)) {
 			$this->objText = Text::__getInstance ();
 		}
 		
@@ -162,68 +154,39 @@ class Template
 
 	public function setVariable ($var, $value, $overwrite = false, $first = false)
 	{
-		if ($overwrite)
-		{	
+		if ($overwrite) {
 			$this->values[$var] = $value;
 		}
 		
-		else 
-		{
-			if (isset ($this->values[$var]))
-			{
-				if ($first)
-				{	
+		else {
+			if (isset ($this->values[$var])) {
+				if ($first) {
 					$this->values[$var] = $value.$this->values[$var];
 				}
 				
-				else 
-				{
+				else {
 					$this->values[$var].= $value;
 				}
 			}
 			
-			else 
-			{
+			else {
 				$this->values[$var] = $value;
 			}
 		}
 	}
-	
-	public function addListValue ($var, $value)
+
+	/**
+	 * Return an array of all filenames, or FALSE if none are found.
+	 * @param $template
+	 * @param bool $all
+	 * @return bool|string
+	 */
+	private static function getFilenames ($template, $all = false)
 	{
-		$this->lists[$var][] = $value;
-	}
-	
-	public function putIntoText ($txt, $params = array ())
-	{
-		return Tools::putIntoText ($txt, $params);
-	}
-	
-	public function sortList ($var)
-	{
-		if (isset ($this->lists[$var]))
-		{
-			sort ($this->lists[$var]);
-		}
-	}
-	
-	public function usortList ($var, $function)
-	{
-		if (isset ($this->lists[$var]))
-		{
-			usort ($this->lists[$var], $function);
-		}
-	}
-	
-	public function isTrue ($var)
-	{
-		return isset ($this->values[$var]) && $this->values[$var];
-	}
-	
-	private static function getFilename ($template)
-	{
-		foreach (self::getTemplatePaths () as $v)
-		{
+		$out = array ();
+
+		foreach (self::getTemplatePaths () as $v) {
+
 			// Split prefix and folder
 			$split = explode ('|', $v);
 
@@ -235,80 +198,115 @@ class Template
 
 				if ($templatefixed == $prefix)
 				{
-
 					$templaterest = substr ($template, strlen ($templatefixed));
-					if (is_readable ($folder . '/' . $templaterest))
+					if (is_readable ($folder . $templaterest))
 					{
-						return $folder . '/' . $templaterest;
+						$out[] = $folder . $templaterest;
+
+						if (!$all)
+							return $out;
 					}
 				}
 			}
 			else
 			{
-				if (is_readable ($v . '/' . $template))
+				if (is_readable ($v . $template))
 				{
-					return $v . '/' . $template;
+					$out[] = $v . $template;
+
+					if (!$all)
+						return $out;
 				}
 			}
 		}
-		
+
+		if (count ($out) > 0)
+		{
+			return $out;
+		}
 		return false;	
 	}
 	
 	public static function hasTemplate ($template)
 	{
-		return self::getFilename ($template) != false;
-	}
-	
-	public function getClickTo ($sKey, $sSection = null, $sFile = null)
-	{
-		if (!isset ($this->objText))
-		{
-			$this->objText = Text::__getInstance ();
-		}
-		
-		return $this->objText->getClickTo ($this->getText ($sKey, $sSection, $sFile));
+		return self::getFilenames ($template) ? true : false;
 	}
 
 	public function parse ($template, $text = null)
 	{
-		/* Set static url adress */
-		$this->set ('STATIC_URL', TEMPLATE_DIR);
-		
-		// SEt unique id
-		$this->set ('templateID', self::getUniqueId ());
+		if (! $filenames = $this->getFilenames ($template))
+		{
+			$out = '<h1>Template not found</h1>';
+			$out .= '<p>The system could not find template "'.$template.'"</p>';
+			return $out;
+		}
 
 		ob_start ();
 		
-		if (! $filename = $this->getFilename ($template))
-		{
-			echo '<h1>Template not found</h1>';
-			echo '<p>The system could not find template "'.$template.'"</p>';
-			
-			$filename = null;
-		}
-		
-		foreach ($this->values as $k => $v)
-		{
+		foreach ($this->values as $k => $v) {
 			$$k = $v;
 		}
-		
-		foreach ($this->lists as $k => $v)
-		{
-			$n = 'list_'.$k;	
-			$$n = $v;
-		}
-		
-		
-		if (isset ($filename))
-		{
-			include $filename;
-		}
+
+		include $filenames[0];
 		
 		$val = ob_get_contents();
+
 		ob_end_clean();
 
-		return $val;
+		return $this->processRenderQueue (array ('content' => $val));
+	}
+
+	private function processRenderQueue ($contents = array ())
+	{
+		if (isset ($this->layoutRender))
+		{
+			$template = new self ();
+
+			foreach ($contents as $k => $v)
+			{
+				$template->set ($k, $v);
+			}
+
+			return $template->parse ($this->layoutRender);
+		}
+		else {
+			return $contents['content'];
+		}
+	}
+
+	/**
+	 * Extend a parent theme.
+	 * @param $layout
+	 */
+	private function layout ($layout)
+	{
+		$this->layoutRender = $layout;
+	}
+
+	/**
+	 * Go trough all set template directories and search for
+	 * a specific template. Concat all of them.
+	 */
+	private function combine ($template)
+	{
+		$files = $this->getFilenames ($template, true);
+		if ($files)
+		{
+			ob_start ();
+
+			foreach ($this->values as $k => $v) {
+				$$k = $v;
+			}
+
+			foreach ($files as $file) {
+				include $file;
+			}
+
+			$val = ob_get_contents();
+			ob_end_clean();
+
+			return $val;
+		}
+		return "";
 	}
 }
-?>

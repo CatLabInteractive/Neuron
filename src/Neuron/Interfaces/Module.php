@@ -9,8 +9,13 @@
 namespace Neuron\Interfaces;
 
 
-interface ModuleController
+interface Module
 {
+    /**
+     * Set template paths, config vars, etc
+     * @return void
+     */
+    public function initialize ();
 
     /**
      * Register the routes required for this module.

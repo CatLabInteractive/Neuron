@@ -42,6 +42,7 @@ class Request
 		$model->setPost ($_POST);
 		$model->setEnvironment ($_SERVER);
 		$model->setStatus (http_response_code ());
+		$model->setUrl (self::getCurrentUri ());
 
 		return $model;
 	}
@@ -90,6 +91,26 @@ class Request
 		}
 
 		return $method;
+	}
+
+	/**
+	 * Define the current relative URI
+	 * @return string
+	 */
+	private static function getCurrentUri ()
+	{
+		// Get the current Request URI and remove rewrite basepath from it (= allows one to run the router in a subfolder)
+		$basepath = implode('/', array_slice(explode('/', $_SERVER['SCRIPT_NAME']), 0, -1)) . '/';
+		$uri = substr($_SERVER['REQUEST_URI'], strlen($basepath));
+
+		// Don't take query params into account on the URL
+		if (strstr($uri, '?')) $uri = substr($uri, 0, strpos($uri, '?'));
+
+		// Remove trailing slash + enforce a slash at the start
+		$uri = '/' . trim($uri, '/');
+
+		return $uri;
+
 	}
 
 	/**

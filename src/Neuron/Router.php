@@ -1,29 +1,5 @@
 <?php
 
-/*
-
-Copyright (c) 2013 Bram(us) Van Damme - http://www.bram.us/
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is furnished
-to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
- */
-
 /**
  * @author		Bram(us) Van Damme <bramus@bram.us>
  * @copyright	Copyright (c), 2013 Bram(us) Van Damme
@@ -32,6 +8,8 @@ THE SOFTWARE.
 
 namespace Neuron;
 
+use Neuron\Exceptions\InvalidParameter;
+
 class Router {
 
 
@@ -39,13 +17,6 @@ class Router {
      * @var array The route patterns and their handling functions
      */
     private $routes = array();
-
-
-    /**
-     * @var array The before middleware route patterns and their handling functions
-     */
-    private $befores = array();
-
 
     /**
      * @var object The function to be executed when no route has been matched
@@ -64,27 +35,10 @@ class Router {
      */
     private $method = '';
 
-
     /**
-     * Store a before middleware route and a handling function to be executed when accessed using one of the specified methods
-     *
-     * @param string $methods Allowed methods, | delimited
-     * @param string $pattern A route pattern such as /about/system
-     * @param object $fn The handling function to be executed
+     * @var \Neuron\FrontController
      */
-    public function before($methods, $pattern, $fn) {
-
-        $pattern = $this->baseroute . '/' . trim($pattern, '/');
-        $pattern = $this->baseroute ? rtrim($pattern, '/') : $pattern;
-
-        foreach (explode('|', $methods) as $method) {
-            $this->befores[$method][] = array(
-                'pattern' => $pattern,
-                'fn' => $fn
-            );
-        }
-
-    }
+    private $frontController;
 
     /**
      * Store a route and a handling function to be executed when accessed using one of the specified methods
@@ -107,10 +61,6 @@ class Router {
 
     }
 
-    public function module ($pattern, \Neuron\FrontController $controller)
-    {
-
-    }
 
     /**
      * Shorthand for a route accessed using GET
@@ -166,7 +116,6 @@ class Router {
         $this->match('PUT', $pattern, $fn);
     }
 
-
     /**
      * Shorthand for a route accessed using OPTIONS
      *
@@ -178,96 +127,38 @@ class Router {
     }
 
     /**
-     * Mounts a collection of callables onto a base route
-     *
-     * @param string $baseroute The route subpattern to mount the callables on
-     * @param callable $fn The callabled to be called
+     * @param $prefix
+     * @param Interfaces\Module $module
      */
-    public function mount($baseroute, $fn) {
-
-        // Track current baseroute
-        $curBaseroute = $this->baseroute;
-
-        // Build new baseroute string
-        $this->baseroute .= $baseroute;
-
-        // Call the callable
-        call_user_func($fn);
-
-        // Restore original baseroute
-        $this->baseroute = $curBaseroute;
-
+    public function module ($prefix, \Neuron\Interfaces\Module $module)
+    {
+        $module->initialize ();
+        $module->setRoutes ($this, $prefix);
     }
-
-
-    /**
-     * Get all request headers
-     * @return array The request headers
-     */
-    public function getRequestHeaders() {
-
-        // getallheaders available, use that
-        if (function_exists('getallheaders')) return getallheaders();
-
-        // getallheaders not available: manually extract 'm
-        $headers = array();
-        foreach ($_SERVER as $name => $value) {
-            if ((substr($name, 0, 5) == 'HTTP_') || ($name == 'CONTENT_TYPE') || ($name == 'CONTENT_LENGTH')) {
-                $headers[str_replace(array(' ', 'Http'), array('-', 'HTTP'), ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
-            }
-        }
-        return $headers;
-
-    }
-
-
-    /**
-     * Get the request method used, taking overrides into account
-     * @return string The Request method to handle
-     */
-    public function getRequestMethod() {
-
-        // Take the method as found in $_SERVER
-        $method = $_SERVER['REQUEST_METHOD'];
-
-        // If it's a HEAD request override it to being GET and prevent any output, as per HTTP Specification
-        // @url http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.4
-        if ($_SERVER['REQUEST_METHOD'] == 'HEAD') {
-            ob_start();
-            $method = 'GET';
-        }
-
-        // If it's a POST request, check for a method override header
-        else if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $headers = $this->getRequestHeaders();
-            if (isset($headers['X-HTTP-Method-Override']) && in_array($headers['X-HTTP-Method-Override'], array('PUT', 'DELETE', 'PATCH'))) {
-                $method = $headers['X-HTTP-Method-Override'];
-            }
-        }
-
-        return $method;
-
-    }
-
 
     /**
      * Execute the router: Loop all defined before middlewares and routes, and execute the handling function if a mactch was found
      *
-     * @param object $callback Function to be executed after a matching route was handled (= after router middleware)
+     * @param callable|null $callback Function to be executed after a matching route was handled (= after router middleware)
+     * @return \Neuron\Net\Response
      */
-    public function run($callback = null) {
+    public function run (callable $callback = null) {
+
+        // Set fallback template directory
+        \Neuron\Core\Template::addTemplatePath (dirname (dirname (__FILE__)) . '/templates/');
+
+        $request = \Neuron\Net\Request::fromInput ();
+
+        $this->frontController = \Neuron\FrontController::getInstance ();
+        $this->frontController->setRequest ($request);
 
         // Define which method we need to handle
-        $this->method = $this->getRequestMethod();
-
-        // Handle all before middlewares
-        if (isset($this->befores[$this->method]))
-            $this->handle($this->befores[$this->method]);
+        $this->method = $request->getMethod ();
 
         // Handle all routes
         $numHandled = 0;
         if (isset($this->routes[$this->method]))
-            $numHandled = $this->handle($this->routes[$this->method], true);
+            $this->handle($this->routes[$this->method], true);
 
         // If no route was handled, trigger the 404 (if any)
         if ($numHandled == 0) {
@@ -276,7 +167,7 @@ class Router {
         }
         // If a route was handled, perform the finish callback (if any)
         else {
-            if ($callback && is_callable ($callback)) $callback();
+            if ($callback) $callback();
         }
 
         // If it originally was a HEAD request, clean up after ourselves by emptying the output buffer
@@ -298,18 +189,12 @@ class Router {
      * Handle a a set of routes: if a match is found, execute the relating handling function
      * @param array $routes Collection of route patterns and their handling functions
      * @param boolean $quitAfterRun Does the handle function need to quit after one route was matched?
-     * @return int The number of routes handled
+     * @return \Neuron\Net\Response The response
      */
-    private function handle($routes, $quitAfterRun = false) {
-
-        // Counter to keep track of the number of routes we've handled
-        $numHandled = 0;
+    private function handle($routes) {
 
         // The current page URL
-        $uri = $this->getCurrentUri();
-
-        // Variables in the URL
-        $urlvars = array();
+        $uri = $this->frontController->getRequest ()->getUrl ();
 
         // Loop all routes
         foreach ($routes as $route) {
@@ -336,62 +221,81 @@ class Router {
                 }, $matches, array_keys($matches));
 
                 // call the handling function with the URL parameters
-                $this->handleOutput (call_user_func_array($route['fn'], $params));
+                $this->handleMatch ($route['fn'], $params);
+                //call_user_func_array($route['fn'], $params);
 
                 // yay!
-                $numHandled++;
+                //$numHandled++;
 
                 // If we need to quit, then quit
-                if ($quitAfterRun) break;
+                //if ($quitAfterRun) break;
 
             }
 
         }
 
-        // Return the number of routes handled
-        return $numHandled;
+        return false;
 
     }
-
-    private function handleOutput ($output)
-    {
-        if (!$output)
-        {
-            // Nothing to do.
-            return;
-        }
-
-        if ($output instanceof \Neuron\Net\Response)
-        {
-            $output->output ();
-        }
-
-        else {
-            echo $output;
-        }
-    }
-
 
     /**
-     * Define the current relative URI
-     * @return string
+     * @param $function
+     * @param $params
+     * @throws InvalidParameter
      */
-    private function getCurrentUri() {
+    private function handleMatch ($function, $params)
+    {
+        if (is_callable ($function))
+        {
+            $response = call_user_func_array($function, $params);
+        }
+        else {
+            if (strpos ($function, '@'))
+            {
+                $param = explode ('@', $function);
+                if (count ($param) !== 2)
+                {
+                    throw new InvalidParameter ("Controller@method syntax not valid for " . $function);
+                }
 
-        // Get the current Request URI and remove rewrite basepath from it (= allows one to run the router in a subfolder)
-        $basepath = implode('/', array_slice(explode('/', $_SERVER['SCRIPT_NAME']), 0, -1)) . '/';
-        $uri = substr($_SERVER['REQUEST_URI'], strlen($basepath));
+                $response = $this->handleController ($param[0], $param[1], $params);
+            }
+            else {
+                throw new InvalidParameter ("Method not found.");
+            }
+        }
 
-        // Don't take query params into account on the URL
-        if (strstr($uri, '?')) $uri = substr($uri, 0, strpos($uri, '?'));
+        if ($response)
+        {
+            if ($response instanceof \Neuron\Net\Response)
+            {
+                $response->output ();
+            }
+            else {
+                echo $response;
+            }
+        }
+    }
 
-        // Remove trailing slash + enforce a slash at the start
-        $uri = '/' . trim($uri, '/');
+    /**
+     * @param string $controller
+     * @param string $method
+     * @param array $params
+     * @throws Exceptions\DataNotFound
+     * @throws InvalidParameter
+     * @return mixed
+     */
+    private function handleController ($controller, $method, $params)
+    {
+        $controller = \Neuron\Tools\ControllerFactory::getInstance ()->getController ($controller);
 
-        return $uri;
-
+        if (is_callable (array ($controller, $method)))
+        {
+            return call_user_func_array(array ($controller, $method), $params);
+        }
+        else {
+            throw new InvalidParameter ("Method not found.");
+        }
     }
 
 }
-
-// EOF
