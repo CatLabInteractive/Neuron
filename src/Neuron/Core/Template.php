@@ -352,11 +352,11 @@ class Template
 
 	private function css ($path)
 	{
-		return '<link rel="stylesheet" href="'. $path . '" />';
+		return '<link rel="stylesheet" href="/'. $path . '" />';
 	}
 
 	private function js ($path)
 	{
-		return '<script src="' . $path . '"></script>';
+		return '<script src="/' . $path . '"></script>';
 	}
 }
