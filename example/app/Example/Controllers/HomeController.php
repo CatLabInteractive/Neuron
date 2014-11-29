@@ -10,6 +10,7 @@ namespace Example\Controllers;
 
 use Neuron\Config;
 use Neuron\Core\Template;
+use Neuron\Net\Response;
 
 class HomeController {
 
@@ -19,7 +20,7 @@ class HomeController {
 
 		$template->set ('title', Config::get ('app.name'));
 
-		return \Neuron\Net\Response::template ($template);
+		return Response::template ($template);
 	}
 
 }
