@@ -46,7 +46,7 @@ class Router {
      *
      * @param string $methods Allowed methods, | delimited
      * @param string $pattern A route pattern such as /about/system
-     * @param object $fn The handling function to be executed
+     * @param mixed $fn The handling function to be executed
      */
     public function match($methods, $pattern, $fn) {
 
@@ -67,7 +67,7 @@ class Router {
      * Shorthand for a route accessed using GET
      *
      * @param string $pattern A route pattern such as /about/system
-     * @param object $fn The handling function to be executed
+     * @param mixed $fn The handling function to be executed
      */
     public function get($pattern, $fn) {
         $this->match('GET', $pattern, $fn);
@@ -78,7 +78,7 @@ class Router {
      * Shorthand for a route accessed using POST
      *
      * @param string $pattern A route pattern such as /about/system
-     * @param object $fn The handling function to be executed
+     * @param mixed $fn The handling function to be executed
      */
     public function post($pattern, $fn) {
         $this->match('POST', $pattern, $fn);
@@ -89,7 +89,7 @@ class Router {
      * Shorthand for a route accessed using PATCH
      *
      * @param string $pattern A route pattern such as /about/system
-     * @param object $fn The handling function to be executed
+     * @param mixed $fn The handling function to be executed
      */
     public function patch($pattern, $fn) {
         $this->match('PATCH', $pattern, $fn);
@@ -100,7 +100,7 @@ class Router {
      * Shorthand for a route accessed using DELETE
      *
      * @param string $pattern A route pattern such as /about/system
-     * @param object $fn The handling function to be executed
+     * @param mixed $fn The handling function to be executed
      */
     public function delete($pattern, $fn) {
         $this->match('DELETE', $pattern, $fn);
@@ -111,7 +111,7 @@ class Router {
      * Shorthand for a route accessed using PUT
      *
      * @param string $pattern A route pattern such as /about/system
-     * @param object $fn The handling function to be executed
+     * @param mixed $fn The handling function to be executed
      */
     public function put($pattern, $fn) {
         $this->match('PUT', $pattern, $fn);
@@ -121,7 +121,7 @@ class Router {
      * Shorthand for a route accessed using OPTIONS
      *
      * @param string $pattern A route pattern such as /about/system
-     * @param object $fn The handling function to be executed
+     * @param mixed $fn The handling function to be executed
      */
     public function options($pattern, $fn) {
         $this->match('OPTIONS', $pattern, $fn);
