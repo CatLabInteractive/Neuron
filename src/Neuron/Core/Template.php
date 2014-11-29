@@ -88,7 +88,7 @@ class Template
 	 * Create a template.
 	 * @param $template
 	 */
-	public function __construct ($template)
+	public function __construct ($template = null)
 	{
 		$this->template = $template;
 	}

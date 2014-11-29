@@ -9,6 +9,7 @@
 namespace Neuron\Net;
 
 
+use Neuron\Core\Template;
 use Neuron\Models\User;
 use Neuron\Net\Outputs\HTML;
 use Neuron\Net\Outputs\JSON;
@@ -106,15 +107,20 @@ class Response
 	{
 		$in = new self ();
 
-		$template = new \Neuron\Core\Template ();
-
-		foreach ($data as $k => $v)
+		if ($name instanceof Template)
 		{
-			$template->set ($k, $v);
+			$in->setTemplate ($name);
 		}
+		else {
+			$template = new Template ($name);
 
-		$in->setBody ($template->parse ($name));
-		$in->setOutput (new HTML ());
+			foreach ($data as $k => $v)
+			{
+				$template->set ($k, $v);
+			}
+
+			$in->setTemplate ($template);
+		}
 
 		return $in;
 	}
@@ -158,6 +164,12 @@ class Response
 
 		$data['output'] = $outputname;
 		return $data;
+	}
+
+	private function setTemplate (Template $template)
+	{
+		$this->setBody ($template->parse ());
+		$this->setOutput (new HTML ());
 	}
 
 	public function setOutput (Output $output)
