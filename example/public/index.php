@@ -1,4 +1,4 @@
 <?php
 
 $app = include ('../bootstrap/start.php');
-$app->run ();
+$app->dispatch ();

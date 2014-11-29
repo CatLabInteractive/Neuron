@@ -6,7 +6,7 @@
  * Time: 13:57
  */
 
-namespace Neuron;
+namespace Neuron\Net;
 
 use Neuron\Core\Tools;
 

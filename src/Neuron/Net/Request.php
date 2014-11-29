@@ -10,7 +10,7 @@ namespace Neuron\Net;
 
 
 use Neuron\Exceptions\InvalidParameter;
-use Neuron\InputStream;
+use Neuron\Net\InputStream;
 use Neuron\MapperFactory;
 use Neuron\Models\User;
 

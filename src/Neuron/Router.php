@@ -9,6 +9,7 @@
 namespace Neuron;
 
 use Neuron\Exceptions\InvalidParameter;
+use Neuron\Net\Request;
 
 class Router {
 
@@ -36,9 +37,9 @@ class Router {
     private $method = '';
 
     /**
-     * @var \Neuron\FrontController
+     * @var \Neuron\Net\Request
      */
-    private $frontController;
+    private $request;
 
     /**
      * Store a route and a handling function to be executed when accessed using one of the specified methods
@@ -139,21 +140,17 @@ class Router {
     /**
      * Execute the router: Loop all defined before middlewares and routes, and execute the handling function if a mactch was found
      *
-     * @param callable|null $callback Function to be executed after a matching route was handled (= after router middleware)
+     * @param Request $request
      * @return \Neuron\Net\Response
      */
-    public function run (callable $callback = null) {
-
-        // Set fallback template directory
-        \Neuron\Core\Template::addTemplatePath (dirname (dirname (__FILE__)) . '/templates/');
-
-        $request = \Neuron\Net\Request::fromInput ();
-
-        $this->frontController = \Neuron\FrontController::getInstance ();
-        $this->frontController->setRequest ($request);
+    public function run (Request $request)
+    {
 
         // Define which method we need to handle
         $this->method = $request->getMethod ();
+
+        // Set request
+        $this->request = $request;
 
         // Handle all routes
         $numHandled = 0;
@@ -172,10 +169,6 @@ class Router {
                 $request->setStatus (404);
                 $request->output ();
             }
-        }
-        // If a route was handled, perform the finish callback (if any)
-        else {
-            if ($callback) $callback();
         }
 
         // If it originally was a HEAD request, clean up after ourselves by emptying the output buffer
@@ -199,10 +192,10 @@ class Router {
      * @param boolean $quitAfterRun Does the handle function need to quit after one route was matched?
      * @return \Neuron\Net\Response The response
      */
-    private function handle($routes) {
+    private function handle ($routes) {
 
         // The current page URL
-        $uri = $this->frontController->getRequest ()->getUrl ();
+        $uri = $this->request->getUrl ();
 
         $numHandled = 0;
 

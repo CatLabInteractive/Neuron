@@ -1,71 +1,15 @@
 <?php
 
-
 namespace Neuron\Core;
 
 use Neuron\Core\Text;
 use Neuron\Core\Tools;
 use Neuron\Exceptions\DataNotSet;
 
-
-// A few ugly methods because this wasn't very well designed at first? ;-)
-$catlab_template_path = '';
-
-function set_template_path ($path)
-{
-	global $catlab_template_path;
-	$catlab_template_path = $path;
-
-	if (!defined ('TEMPLATE_DIR'))
-	{
-		define ('TEMPLATE_DIR', $path);
-	}
-}
-
-function get_template_path ()
-{
-	global $catlab_template_path;
-	return $catlab_template_path;
-}
-
-function add_to_template_path ($path, $priorize = true, $folder = null)
-{
-	if ($folder)
-	{
-		$path = $folder . '|' . $path;
-	}
-
-	if (get_template_path () == '')
-	{
-		set_template_path ($path);
-	}
-
-	else if ($priorize)
-	{
-		set_template_path ($path . PATH_SEPARATOR . get_template_path ());
-	}
-	else
-	{
-		set_template_path (get_template_path () . PATH_SEPARATOR . $path);
-	}
-}
-
-// Backwards compatability stuff
-if (defined ('DEFAULT_TEMPLATE_DIR'))
-{
-	add_to_template_path (DEFAULT_TEMPLATE_DIR, false);
-}
-
-if (defined ('TEMPLATE_DIR'))
-{
-	add_to_template_path (TEMPLATE_DIR, true);
-}
-
 class Template
 {
 
 	private $values = array ();
-	private $lists = array ();
 	
 	private $sTextFile = null;
 	private $sTextSection = null;
@@ -77,6 +21,13 @@ class Template
 	// Yea, ugly. I know.
 	static $shares = array ();
 
+	/** @var string[] */
+	static $paths = array ();
+
+	/** @var int[] */
+	static $pathpriorities = array ();
+
+	/** @var string $template */
 	private $template;
 	
 	public static function load ()
@@ -114,31 +65,62 @@ class Template
 	/**
 	* I believe this is a nicer way to do the directory setting.
 	*/
-	public static function setTemplatePath ($path)
+	public static function setPath ($path)
 	{
-		set_template_path ($path);
+		self::$paths = array ();
+		self::$pathpriorities = array ();
+
+		self::addPath ($path, '', 0);
 	}
 
 	/**
-	* Add a folder to the template path.
-	* @param $path: path to add
-	* @param $prefix: only templates starting with given prefix will be loaded from this path.
+	 * Add a folder to the template path.
+	 * @param $path: path to add
+	 * @param $prefix: only templates starting with given prefix will be loaded from this path.
+	 * @param $priority
 	*/
-	public static function addTemplatePath ($path, $prefix = '', $priorize = false)
+	public static function addPath ($path, $prefix = '', $priority = 0)
 	{
 		if (substr ($path, -1) !== '/')
 			$path .= '/';
 
-		add_to_template_path ($path, $priorize, $prefix);
+		if ($prefix) {
+			$name = $prefix . '|' . $path;
+		}
+		else {
+			$name = $path;
+		}
+
+		// Set priority
+		self::$pathpriorities[$name] = $priority;
+
+		// Calculate the position based on priority.
+		$position = 0;
+		foreach (self::$paths as $path)
+		{
+			if (self::$pathpriorities[$path] < $priority)
+			{
+				break;
+			}
+			$position ++;
+		}
+
+		array_splice (self::$paths, $position, 0, array ($name));
 	}
-	
-	private static function getTemplatePaths ()
+
+	/**
+	 * @return string[]
+	 */
+	public static function getPaths ()
 	{
-		return explode (PATH_SEPARATOR, get_template_path ());
+		return self::$paths;
 	}
-	
-	// Text function
-	public function setTextSection ($sTextSection, $sTextFile = null)
+
+	/**
+	 * @param $sTextSection
+	 * @param null $sTextFile
+	 */
+	private function setTextSection ($sTextSection, $sTextFile = null)
 	{
 		$this->sTextSection = $sTextSection;
 		
@@ -147,8 +129,11 @@ class Template
 			$this->sTextFile = $sTextFile;
 		}
 	}
-	
-	public function setTextFile ($sTextFile)
+
+	/**
+	 * @param $sTextFile
+	 */
+	private function setTextFile ($sTextFile)
 	{
 		$this->sTextFile = $sTextFile;
 	}
@@ -184,7 +169,13 @@ class Template
 		return $txt;
 	}
 
-	public function setVariable ($var, $value, $overwrite = false, $first = false)
+	/**
+	 * @param $var
+	 * @param $value
+	 * @param bool $overwrite
+	 * @param bool $first
+	 */
+	private function setVariable ($var, $value, $overwrite = false, $first = false)
 	{
 		if ($overwrite) {
 			$this->values[$var] = $value;
@@ -217,7 +208,7 @@ class Template
 	{
 		$out = array ();
 
-		foreach (self::getTemplatePaths () as $v) {
+		foreach (self::getPaths () as $v) {
 
 			// Split prefix and folder
 			$split = explode ('|', $v);

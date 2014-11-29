@@ -9,6 +9,7 @@
 namespace Neuron;
 
 use Neuron\Exceptions\DataNotSet;
+use Neuron\Net\Request;
 use Neuron\Router;
 
 class Application {
@@ -16,9 +17,26 @@ class Application {
 	/** @var Router $router */
 	private $router;
 
-	public function __construct ()
-	{
+	private static $in;
 
+	/**
+	 * @return Application
+	 */
+	public static function getInstance ()
+	{
+		if (!isset (self::$in))
+		{
+			self::$in = new self ();
+		}
+		return self::$in;
+	}
+
+	/**
+	 *
+	 */
+	private function __construct ()
+	{
+		\Neuron\Core\Template::addPath (dirname (dirname (__FILE__)) . '/templates/', '', -1);
 	}
 
 	/**
@@ -32,13 +50,18 @@ class Application {
 	/**
 	 * @throws DataNotSet
 	 */
-	public function run ()
+	public function dispatch (\Neuron\Net\Request $request = null)
 	{
 		if (!isset ($this->router))
 		{
 			throw new DataNotSet ("Application needs a router.");
 		}
 
-		$this->router->run ();
+		if (!isset ($request))
+		{
+			$request = Request::fromInput ();
+		}
+
+		$this->router->run ($request);
 	}
 }

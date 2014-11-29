@@ -8,7 +8,7 @@ $loader = require_once '../../vendor/autoload.php';
 $loader->add ('Example\\', __DIR__ . '/../app/');
 
 // Start the app
-$app = new \Neuron\Application ();
+$app = \Neuron\Application::getInstance ();
 
 // Load the router
 $app->setRouter (include ('router.php'));
@@ -20,7 +20,7 @@ $app->setRouter (include ('router.php'));
 \Neuron\Config::environment ('development');
 
 // Set the template folder
-\Neuron\Core\Template::addTemplatePath (__DIR__ . '/../templates/');
+\Neuron\Core\Template::addPath (__DIR__ . '/../templates/');
 
 // Return app
 return $app;

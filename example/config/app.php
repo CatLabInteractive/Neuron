@@ -3,6 +3,13 @@ return array (
 
 	'url' => '/',
 
-	'name' => 'Neuron example'
+	'name' => 'Neuron example',
+
+	'example' => array (
+
+		'first' => 'First value',
+		'second' => 'Second value'
+
+	)
 
 );
