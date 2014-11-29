@@ -22,12 +22,12 @@ class URLBuilder
 
 		if (!empty ($params))
 		{
-			return BASE_URL . $module . '?' . $params;
+			return Config::get ('app.url', '/') . $module . '?' . $params;
 		}
 		else
 		{
 			// Google likes these.
-			return BASE_URL . $module;	
+			return Config::get ('app.url', '/') . $module;
 		}
 	}
 }
