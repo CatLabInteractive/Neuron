@@ -17,6 +17,9 @@ class Application {
 	/** @var Router $router */
 	private $router;
 
+	/** @var string $locale */
+	private $locale;
+
 	private static $in;
 
 	/**
@@ -48,10 +51,43 @@ class Application {
 	}
 
 	/**
+	 * @param string $locale
+	 */
+	public function setLocale ($locale)
+	{
+		$this->locale = $locale;
+
+		// Also let php know
+		putenv ("LANG=" . $this->locale);
+		setlocale (LC_ALL, $this->locale);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getLocale ()
+	{
+		return $this->locale;
+	}
+
+	/**
+	 * Check if locale is set, and if not, set it to english.
+	 */
+	private function checkLocale ()
+	{
+		if (!isset ($this->locale))
+		{
+			$this->setLocale ('en');
+		}
+	}
+
+	/**
 	 * @throws DataNotSet
 	 */
 	public function dispatch (\Neuron\Net\Request $request = null)
 	{
+		$this->checkLocale ();
+
 		if (!isset ($this->router))
 		{
 			throw new DataNotSet ("Application needs a router.");

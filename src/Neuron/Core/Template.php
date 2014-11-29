@@ -155,32 +155,6 @@ class Template
 	{
 		$this->setVariable ($var, $value, $overwrite, $first);
 	}
-	
-	// Intern function
-	private function getText ($sKey, $sSection = null, $sFile = null, $sDefault = null)
-	{
-		if (!isset ($this->objText)) {
-			$this->objText = Text::__getInstance ();
-		}
-		
-		$txt = Tools::output_varchar
-		(
-			$this->objText->get 
-			(
-				$sKey, 
-				isset ($sSection) ? $sSection : $this->sTextSection, 
-				isset ($sFile) ? $sFile : $this->sTextFile,
-				false
-			)
-		);
-
-		if (!$txt)
-		{
-			return $sDefault;
-		}
-
-		return $txt;
-	}
 
 	/**
 	 * @param $var
@@ -398,5 +372,15 @@ class Template
 	private function js ($path)
 	{
 		return '<script src="/' . $path . '"></script>';
+	}
+
+	private function textdomain ($domain)
+	{
+		\Neuron\Tools\Text::getInstance ()->setDomain ($domain);
+	}
+
+	private function gettext ($message1, $message2 = null, $n = null)
+	{
+		return \Neuron\Tools\Text::getInstance ()->getText ($message1, $message2, $n);
 	}
 }

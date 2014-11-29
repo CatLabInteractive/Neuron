@@ -1,4 +1,7 @@
-<?php $this->layout ('index.phpt'); ?>
+<?php
+	$this->layout ('index.phpt');
+	$this->textdomain ('example');
+?>
 
 		<h2>Example structure</h2>
 		<p>
@@ -16,3 +19,5 @@
 			<?php } ?>
 		</ul>
 
+		<h2>Text</h2>
+		<p><?php echo $this->gettext ('Let\'s give this gettext a try...'); ?></p>
