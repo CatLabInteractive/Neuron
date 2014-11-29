@@ -29,6 +29,9 @@ class Template
 
 	/** @var string $template */
 	private $template;
+
+	/** @var array $helpers */
+	static $helpers = array ();
 	
 	public static function load ()
 	{
@@ -60,6 +63,16 @@ class Template
 	public static function share ($name, $value)
 	{
 		self::$shares[$name] = $value;
+	}
+
+	/**
+	 * Add a helper that is available inside the templates.
+	 * @param $name
+	 * @param $helper
+	 */
+	public static function addHelper ($name, $helper)
+	{
+		self::$helpers[$name] = $helper;
 	}
 
 	/**
@@ -348,6 +361,33 @@ class Template
 		ob_end_clean();
 
 		return $val;
+	}
+
+	/**
+	 * @param string $name
+	 * @param string $method
+	 * @return string
+	 */
+	private function help ($name, $method)
+	{
+		$args = func_get_args ();
+		array_shift ($args);
+		array_shift ($args);
+
+		if (isset (self::$helpers[$name]))
+		{
+			$call = array ($name, $method);
+			if (is_callable ($call))
+			{
+				return call_user_func_array ($call, $args);
+			}
+			else {
+				return '<p class="error">Method ' . $method . ' on helper ' . $name . ' is not callable.</p>';
+			}
+		}
+		else {
+			return '<p class="error">Could not find helper ' . $name . '</p>';
+		}
 	}
 
 	private function css ($path)
