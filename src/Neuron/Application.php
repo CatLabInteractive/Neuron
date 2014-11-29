@@ -52,6 +52,7 @@ class Application {
 
 	/**
 	 * @param string $locale
+	 * @throws DataNotSet
 	 */
 	public function setLocale ($locale)
 	{
@@ -59,7 +60,12 @@ class Application {
 
 		// Also let php know
 		putenv ("LANG=" . $this->locale);
-		setlocale (LC_ALL, $this->locale);
+
+		$result = setlocale (LC_ALL, $this->locale);
+		if (!$result)
+		{
+			throw new DataNotSet ("Locale " . $locale . " is not available on this platform.");
+		}
 	}
 
 	/**

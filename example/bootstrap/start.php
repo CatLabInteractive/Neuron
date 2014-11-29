@@ -31,7 +31,7 @@ switch ($hostname)
 \Neuron\Core\Template::addPath (__DIR__ . '/../templates/');
 
 // Set the locale
-$app->setLocale ('nl_BE');
+$app->setLocale ('nl_BE.utf8');
 
 // Set our own domain
 \Neuron\Tools\Text::getInstance ()->addPath ('example', __DIR__ . '/../locales/');
