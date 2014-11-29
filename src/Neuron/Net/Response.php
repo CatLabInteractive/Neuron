@@ -99,28 +99,26 @@ class Response
 	}
 
 	/**
-	 * @param $name
-	 * @param $data
+	 * @param Template|string $template
+	 * @param array $data
 	 * @return Response
 	 */
-	public static function template ($name, $data = array ())
+	public static function template ($template, $data = array ())
 	{
 		$in = new self ();
 
-		if ($name instanceof Template)
+		if (! ($template instanceof Template))
 		{
-			$in->setTemplate ($name);
-		}
-		else {
-			$template = new Template ($name);
+			$template = new Template ($template);
 
-			foreach ($data as $k => $v)
-			{
-				$template->set ($k, $v);
-			}
-
-			$in->setTemplate ($template);
 		}
+
+		foreach ($data as $k => $v)
+		{
+			$template->set ($k, $v);
+		}
+
+		$in->setTemplate ($template);
 
 		return $in;
 	}
