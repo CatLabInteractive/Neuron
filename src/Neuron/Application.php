@@ -83,7 +83,7 @@ class Application {
 	{
 		if (!isset ($this->locale))
 		{
-			$this->setLocale ('en');
+			$this->setLocale ('en-US');
 		}
 	}
 
