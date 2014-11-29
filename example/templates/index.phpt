@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html>
-<head>
+	<head>
 
-	<?php echo $this->combine ('sections/head.phpt'); ?>
+		<?php echo $this->combine ('sections/head.phpt'); ?>
 
-</head>
+	</head>
 
-<body>
+	<body>
 
-	<h1>Neuron framework</h1>
-	<?php echo $content; ?>
+		<h1>Neuron framework</h1>
+		<?php echo $content; ?>
 
-</body>
+	</body>
 </html>
