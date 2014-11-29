@@ -21,3 +21,8 @@
 
 		<h2>Text</h2>
 		<p><?php echo $this->gettext ('Let\'s give this gettext a try...'); ?></p>
+
+		<h2>Multiple text</h2>
+		<?php $beers = rand (1, 3); ?>
+
+		<p><?php echo sprintf ($this->ngettext ('There is %s beer', 'There are %s beers.', $beers), $beers); ?></p>

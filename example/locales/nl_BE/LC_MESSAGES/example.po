@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Neuron Example\n"
-"POT-Creation-Date: 2014-11-29 22:47+0100\n"
-"PO-Revision-Date: 2014-11-29 22:47+0100\n"
+"POT-Creation-Date: 2014-11-29 22:52+0100\n"
+"PO-Revision-Date: 2014-11-29 22:53+0100\n"
 "Last-Translator: Thijs Van der Schaeghe <thijs@catlab.be>\n"
 "Language-Team: CatLab Interactive <thijs@catlab.be>\n"
 "Language: nl_BE\n"
@@ -13,8 +13,16 @@ msgstr ""
 "X-Poedit-KeywordsList: _;gettext;gettext_noop\n"
 "X-Poedit-Basepath: ../../../\n"
 "X-Poedit-SourceCharset: UTF-8\n"
+"Plural-Forms: nplurals=2; plural=n == 1 ? 0 : 1;\n"
 "X-Poedit-SearchPath-0: templates\n"
 
 #: templates/example.phpt:23
 msgid "Let's give this gettext a try..."
 msgstr "Laten we dit nog eens proberen..."
+
+#: templates/example.phpt:28
+#, php-format
+msgid "There is %s beer"
+msgid_plural "There are %s beers."
+msgstr[0] "Er is %s bier."
+msgstr[1] "Er zijn %s bieren."

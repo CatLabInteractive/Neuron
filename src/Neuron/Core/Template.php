@@ -379,7 +379,12 @@ class Template
 		\Neuron\Tools\Text::getInstance ()->setDomain ($domain);
 	}
 
-	private function gettext ($message1, $message2 = null, $n = null)
+	private function gettext ($message1)
+	{
+		return \Neuron\Tools\Text::getInstance ()->getText ($message1);
+	}
+
+	private function ngettext ($message1, $message2 = null, $n = null)
 	{
 		return \Neuron\Tools\Text::getInstance ()->getText ($message1, $message2, $n);
 	}
