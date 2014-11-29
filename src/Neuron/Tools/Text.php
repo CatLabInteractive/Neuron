@@ -52,8 +52,6 @@ class Text {
 	 */
 	public function getText ($message1, $message2 = null, $n = null)
 	{
-		//textdomain ($this->domain);
-
 		if (!isset ($message2)) {
 			return dgettext ($this->domain, $message1);
 		}
