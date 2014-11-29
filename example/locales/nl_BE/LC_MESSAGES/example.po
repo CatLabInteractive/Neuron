@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Neuron Example\n"
-"POT-Creation-Date: 2014-11-29 22:52+0100\n"
-"PO-Revision-Date: 2014-11-29 23:01+0100\n"
+"POT-Creation-Date: 2014-11-29 23:17+0100\n"
+"PO-Revision-Date: 2014-11-29 23:18+0100\n"
 "Last-Translator: Thijs Van der Schaeghe <thijs@catlab.be>\n"
 "Language-Team: CatLab Interactive <thijs@catlab.be>\n"
 "Language: nl_BE\n"
@@ -16,11 +16,38 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n == 1 ? 0 : 1;\n"
 "X-Poedit-SearchPath-0: templates\n"
 
-#: templates/example.phpt:23
+#: templates/example.phpt:6
+msgid "Example structure"
+msgstr "Voorbeeldstructuur"
+
+#: templates/example.phpt:8
+msgid ""
+"This is just an example structure. We want to give you all the freedom you "
+"need. No rigid structure. Just a bunch of classes that you can instanciate "
+"in any way you like."
+msgstr ""
+"Dit is slechts een voorbeeldstructuur. We willen je alle vrijheid geven die "
+"je nodig hebt. Geen lompe, verplichte structuren. Gewoon een hoop klasses "
+"die je naar goeddunken kan gebruiken."
+
+#: templates/example.phpt:11
+msgid "Configuration"
+msgstr "Configuratie"
+
+#: templates/example.phpt:12
+#, php-format
+msgid "Config example: %s"
+msgstr "Configuratie voorbeeld: %s"
+
+#: templates/example.phpt:19
+msgid "Text"
+msgstr "Tekst"
+
+#: templates/example.phpt:20
 msgid "Let's give this gettext a try..."
 msgstr "Laten we dit nog eens proberen..."
 
-#: templates/example.phpt:28
+#: templates/example.phpt:25
 #, php-format
 msgid "There is %s beer"
 msgid_plural "There are %s beers."
