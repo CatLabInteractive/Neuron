@@ -358,4 +358,14 @@ class Template
 
 		return $val;
 	}
+
+	private function css ($path)
+	{
+		return '<link rel="stylesheet" href="'. $path . '" />';
+	}
+
+	private function js ($path)
+	{
+		return '<script src="' . $path . '"></script>';
+	}
 }
