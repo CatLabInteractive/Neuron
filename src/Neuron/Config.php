@@ -115,10 +115,7 @@ class Config {
 	 */
 	private function merge ($file, $newData)
 	{
-		foreach ($newData as $key => $value)
-		{
-			$this->files[$file][$key] = $value;
-		}
+		$this->files[$file] = array_replace_recursive ($this->files[$file], $newData);
 	}
 
 	/**
