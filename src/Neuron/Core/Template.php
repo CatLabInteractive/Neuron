@@ -5,7 +5,7 @@ namespace Neuron\Core;
 
 use Neuron\Core\Text;
 use Neuron\Core\Tools;
-
+use Neuron\Exceptions\DataNotSet;
 
 
 // A few ugly methods because this wasn't very well designed at first? ;-)
@@ -76,10 +76,21 @@ class Template
 
 	// Yea, ugly. I know.
 	static $shares = array ();
+
+	private $template;
 	
 	public static function load ()
 	{
 	
+	}
+
+	/**
+	 * Create a template.
+	 * @param $template
+	 */
+	public function __construct ($template)
+	{
+		$this->template = $template;
 	}
 
 	/**
@@ -253,8 +264,19 @@ class Template
 		return self::getFilenames ($template) ? true : false;
 	}
 
-	public function parse ($template, $text = null)
+	public function parse ($template = null, $text = null)
 	{
+		if (!isset ($template))
+		{
+			if (isset ($this->template))
+			{
+				$template = $this->template;
+			}
+			else {
+				throw new DataNotSet ("You must define a template name in constructor or as parse method parameter.");
+			}
+		}
+
 		if (! $ctlbtmpltfiles = $this->getFilenames ($template))
 		{
 			$out = '<h1>Template not found</h1>';
