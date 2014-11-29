@@ -17,7 +17,15 @@ $app->setRouter (include ('router.php'));
 \Neuron\Config::folder (__DIR__ . '/../config/');
 
 // Optionally, set an environment
-\Neuron\Config::environment ('development');
+$hostname = trim (file_get_contents ('/etc/hostname'));
+
+switch ($hostname)
+{
+	case 'my-computer':
+	case 'thijs-home-i7':
+		\Neuron\Config::environment ('development');
+	break;
+}
 
 // Set the template folder
 \Neuron\Core\Template::addPath (__DIR__ . '/../templates/');
