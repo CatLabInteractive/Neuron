@@ -12,13 +12,16 @@ namespace Neuron;
 class Config {
 
 	/** @var Config $in */
-	static $in;
+	private static $in;
 
 	/** @var string $folder */
 	private $folder = '.';
 
 	/** @var string $environment */
 	private $environment;
+
+	/** @var mixed[] $files */
+	private $files;
 
 	/**
 	 * Get a config variable
@@ -78,6 +81,47 @@ class Config {
 	}
 
 	/**
+	 * Load a file in case it's not loaded yet.
+	 * @param $file
+	 */
+	private function loadFile ($file)
+	{
+		if (!isset ($this->files[$file]))
+		{
+			$filename = $this->folder . $file . '.php';
+
+			// First load these
+			if (file_exists ($filename))
+			{
+				$this->files[$file] = include ($filename);
+			}
+
+			// Now overload with environment values
+			if (isset ($this->environment))
+			{
+				$filename = $this->folder . $this->environment . '/' . $file . '.php';
+				if (file_exists ($filename))
+				{
+					$this->merge ($file, include ($filename));
+				}
+			}
+
+		}
+	}
+
+	/**
+	 * @param string $file
+	 * @param mixed[] $newData
+	 */
+	private function merge ($file, $newData)
+	{
+		foreach ($newData as $key => $value)
+		{
+			$this->files[$file][$key] = $value;
+		}
+	}
+
+	/**
 	 * Find a config variable and return it.
 	 * @param string $name
 	 * @param string $default
@@ -85,6 +129,28 @@ class Config {
 	 */
 	private function getValue ($name, $default)
 	{
-		return $default;
+		$parts = explode ('.', $name);
+		$file = array_shift ($parts);
+
+		$this->loadFile ($file);
+
+		if (! isset ($this->files[$file])) {
+			return $default;
+		}
+		else {
+			$out = $this->files[$file];
+			foreach ($parts as $part)
+			{
+				if (!isset ($out[$part]))
+				{
+					return $default;
+				}
+				else {
+					$out = $out[$part];
+				}
+			}
+		}
+
+		return $out;
 	}
 }

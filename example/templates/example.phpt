@@ -8,3 +8,4 @@
 			Just a bunch of classes that you can instanciate in any way you like.
 		</p>
 
+		<p>Config example: <?php echo $title; ?>.</p>

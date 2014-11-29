@@ -1,6 +1,8 @@
 <?php
 return array (
 
-	'url' => '/'
+	'url' => '/',
+
+	'name' => 'Neuron example'
 
 );

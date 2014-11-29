@@ -8,6 +8,7 @@
 
 namespace Example\Controllers;
 
+use Neuron\Config;
 use Neuron\Core\Template;
 
 class HomeController {
@@ -15,6 +16,8 @@ class HomeController {
 	public function main ()
 	{
 		$template = new Template ('example.phpt');
+
+		$template->set ('title', Config::get ('app.name'));
 
 		return \Neuron\Net\Response::template ($template);
 	}
