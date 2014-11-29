@@ -376,7 +376,7 @@ class Template
 
 		if (isset (self::$helpers[$name]))
 		{
-			$call = array ($name, $method);
+			$call = array (self::$helpers[$name], $method);
 			if (is_callable ($call))
 			{
 				return call_user_func_array ($call, $args);
