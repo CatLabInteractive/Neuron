@@ -13,6 +13,11 @@ class URLBuilder
 {
 	public static function getURL ($module = '', $data = array ())
 	{
+		if (substr ($module, 0, 1) === '/')
+		{
+			$module = substr ($module, 1);
+		}
+
 		$params = '';
 		foreach ($data as $k => $v)
 		{
