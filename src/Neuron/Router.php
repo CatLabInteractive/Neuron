@@ -57,7 +57,7 @@ class Router {
      */
     public function match($methods, $pattern, $fn) {
 
-        // Regex are too pro, bro!
+        // Regex are too pro, bro! Give us some simple {param} and {param?} parameters.
         $pattern = preg_replace ('/\/\{\w+\\?}/', '(/\w+)?', $pattern);
         $pattern = preg_replace ('/\/\{\w+\}/', '(/\w+)', $pattern);
 
