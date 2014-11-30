@@ -176,7 +176,7 @@ class Router {
         if ($numHandled == 0) {
             if ($this->notFound) {
                 //call_user_func($this->notFound);
-                $this->handleMatch ($this->notFound, array ());
+                $this->handleMatch ($this->notFound, array (), null);
             }
             else {
 
@@ -239,7 +239,7 @@ class Router {
                 }, $matches, array_keys($matches));
 
                 // call the handling function with the URL parameters
-                $this->handleMatch ($route['fn'], $params);
+                $this->handleMatch ($route['fn'], $params, $route['module']);
                 //call_user_func_array($route['fn'], $params);
 
                 // yay!
@@ -259,9 +259,10 @@ class Router {
     /**
      * @param $function
      * @param $params
+     * @param Module $module
      * @throws InvalidParameter
      */
-    private function handleMatch ($function, $params)
+    private function handleMatch ($function, $params, Module $module = null)
     {
         if (is_callable ($function))
         {
