@@ -9,6 +9,7 @@
 namespace Neuron;
 
 use Neuron\Exceptions\InvalidParameter;
+use Neuron\Interfaces\Controller;
 use Neuron\Interfaces\Module;
 use Neuron\Net\Request;
 use Neuron\Net\Response;
@@ -311,6 +312,12 @@ class Router {
     private function handleController ($controller, $method, $params, $module = null)
     {
         $controller = ControllerFactory::getInstance ()->getController ($controller, $module);
+
+        // If the found controller implements the Controller interface, we set the request.
+        if ($controller instanceof Controller)
+        {
+            $controller->setRequest ($this->request);
+        }
 
         if (is_callable (array ($controller, $method)))
         {
