@@ -23,9 +23,8 @@ interface Module
     /**
      * Register the routes required for this module.
      * @param Router $router
-     * @param $prefix
-     * @return mixed
+     * @return void
      */
-    public function setRoutes (Router $router, $prefix);
+    public function setRoutes (Router $router);
 
 }
