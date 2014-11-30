@@ -11,6 +11,7 @@ namespace Neuron;
 use Neuron\Exceptions\InvalidParameter;
 use Neuron\Interfaces\Module;
 use Neuron\Net\Request;
+use Neuron\Net\Response;
 use Neuron\Tools\ControllerFactory;
 
 class Router {
@@ -73,7 +74,7 @@ class Router {
      * that match the path of all future matches.
      * @param Module $module
      */
-    public function setModule (Module $module = null)
+    private function setModule (Module $module = null)
     {
         $this->module = $module;
     }
@@ -146,17 +147,20 @@ class Router {
      * @param $prefix
      * @param Interfaces\Module $module
      */
-    public function module ($prefix, \Neuron\Interfaces\Module $module)
+    public function module ($prefix, Module $module)
     {
         $module->initialize ();
+
+        $this->setModule ($module);
         $module->setRoutes ($this, $prefix);
+        $this->setModule (null);
     }
 
     /**
      * Execute the router: Loop all defined before middlewares and routes, and execute the handling function if a mactch was found
      *
      * @param Request $request
-     * @return \Neuron\Net\Response
+     * @return Response
      */
     public function run (Request $request)
     {
@@ -180,7 +184,7 @@ class Router {
             }
             else {
 
-                $request = \Neuron\Net\Response::template ('404.phpt');
+                $request = Response::template ('404.phpt');
                 $request->setStatus (404);
                 $request->output ();
             }
@@ -204,8 +208,7 @@ class Router {
     /**
      * Handle a a set of routes: if a match is found, execute the relating handling function
      * @param array $routes Collection of route patterns and their handling functions
-     * @param boolean $quitAfterRun Does the handle function need to quit after one route was matched?
-     * @return \Neuron\Net\Response The response
+     * @return Response The response
      */
     private function handle ($routes) {
 
@@ -277,7 +280,7 @@ class Router {
                     throw new InvalidParameter ("Controller@method syntax not valid for " . $function);
                 }
 
-                $response = $this->handleController ($param[0], $param[1], $params);
+                $response = $this->handleController ($param[0], $param[1], $params, $module);
             }
             else {
                 throw new InvalidParameter ("Method not found.");
@@ -286,7 +289,7 @@ class Router {
 
         if ($response)
         {
-            if ($response instanceof \Neuron\Net\Response)
+            if ($response instanceof Response)
             {
                 $response->output ();
             }
