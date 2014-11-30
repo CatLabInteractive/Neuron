@@ -66,7 +66,7 @@ class Tools
 			return $value == 1 || $value == 'true';
 		}
 		
-		elseif ($type == 'varchar')
+		elseif ($type == 'varchar' || $type == 'string')
 		{
 			return self::isValidUTF8 ($value);
 		}
