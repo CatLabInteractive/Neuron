@@ -12,7 +12,7 @@ use XMLWriter;
 
 class Tools
 {
-	public static function getInput ($dat, $key, $type, $default = false)
+	public static function getInput ($dat, $key, $type, $default = null)
 	{
 		if (is_string ($dat))
 		{

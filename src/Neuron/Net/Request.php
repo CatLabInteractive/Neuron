@@ -9,6 +9,7 @@
 namespace Neuron\Net;
 
 
+use Neuron\Core\Tools;
 use Neuron\Exceptions\InvalidParameter;
 use Neuron\Net\InputStream;
 use Neuron\MapperFactory;
@@ -16,6 +17,12 @@ use Neuron\Models\User;
 
 class Request
 	extends Entity {
+
+	const METHOD_POST = 'POST';
+	const METHOD_GET = 'GET';
+	const METHOD_PATCH = 'PATCH';
+	const METHOD_PUT = 'PUT';
+	const METHOD_OPTIONS = 'OPTIONS';
 
 	/**
 	 * @return Request
@@ -138,7 +145,7 @@ class Request
 		{
 			$model->setSegments ($data['segments']);
 		}
-		
+
 		if (isset ($data['environment']))
 		{
 			$model->setEnvironment ($data['environment']);
@@ -266,5 +273,69 @@ class Request
 	public function getEnvironment ()
 	{
 		return $this->environment;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isPost ()
+	{
+		return $this->getMethod () === self::METHOD_POST;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isGet ()
+	{
+		return $this->getMethod () === self::METHOD_GET;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isPut ()
+	{
+		return $this->getMethod () === self::METHOD_PUT;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isPatch ()
+	{
+		return $this->getMethod () === self::METHOD_PATCH;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isOptions ()
+	{
+		return $this->getMethod () === self::METHOD_OPTIONS;
+	}
+
+	/**
+	 * Similar to fetching a value from $_REQUEST
+	 * @param $field
+	 * @param string $type
+	 * @param mixed $default
+	 * @return mixed|null
+	 */
+	public function input ($field, $type = 'string', $default = null)
+	{
+		// Check post
+		$value = Tools::getInput ($this->getPost (), $field, $type);
+		if ($value === null)
+		{
+			// Check get
+			$value = Tools::getInput ($this->getParameters (), $field, $type);
+		}
+
+		if ($value === null)
+		{
+			return $default;
+		}
+		return $value;
 	}
 } 
