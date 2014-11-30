@@ -55,7 +55,7 @@ class Router {
      * @param string $pattern A route pattern such as /about/system
      * @param mixed $fn The handling function to be executed
      */
-    public function match($methods, $pattern, $fn) {
+    public function match ($methods, $pattern, $fn) {
 
         // Regex are too pro, bro! Give us some simple {param} and {param?} parameters.
         $pattern = preg_replace ('/\/\{\w+\\?}/', '(/\w+)?', $pattern);
@@ -189,8 +189,7 @@ class Router {
             }
             else {
 
-                $request = Response::template ('404.phpt');
-                $request->setStatus (404);
+                $request = Response::error ('Page not found.', Response::STATUS_NOTFOUND);
                 $request->output ();
             }
         }

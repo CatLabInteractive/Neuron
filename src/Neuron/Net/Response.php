@@ -90,12 +90,22 @@ class Response
 		return $in;
 	}
 
-	public static function error ($data, $error_code = 500)
+	/**
+	 * @param string $message
+	 * @param int $statuscode
+	 * @return Response
+	 */
+	public static function error ($message, $statuscode = 500)
 	{
-		$in = new self ();
-		$in->setData ($data);
-		$in->setOutput (new HTML ());
-		return $in;
+		$template = new Template ('error.phpt');
+		$template->set ('message', $message);
+		$template->set ('status', $statuscode);
+
+		$response = self::template ($template);
+		$response->setStatus ($statuscode);
+
+
+		return $response;
 	}
 
 	/**
