@@ -59,7 +59,11 @@ abstract class Observable {
 	 */
 	public function on ($event, callable $callback)
 	{
-		$this->events[$event] = $callback;
+		if (!isset ($this->events[$event]))
+		{
+			$this->events[$event] = array ();
+		}
+		$this->events[$event][] = $callback;
 	}
 
 	/**
