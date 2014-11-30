@@ -9,6 +9,8 @@
 namespace Neuron\Interfaces;
 
 
+use Neuron\Net\Request;
+
 interface Controller
 {
     /**
@@ -17,4 +19,10 @@ interface Controller
      */
     public function __construct (Module $module = null);
 
+    /**
+     * Set (or clear) the request object.
+     * @param Request $request
+     * @return void
+     */
+    public function setRequest (Request $request = null);
 }
