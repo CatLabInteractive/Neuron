@@ -9,7 +9,9 @@
 namespace Neuron;
 
 use Neuron\Exceptions\InvalidParameter;
+use Neuron\Interfaces\Module;
 use Neuron\Net\Request;
+use Neuron\Tools\ControllerFactory;
 
 class Router {
 
@@ -41,6 +43,9 @@ class Router {
      */
     private $request;
 
+    /** @var Module|null */
+    private $module = null;
+
     /**
      * Store a route and a handling function to be executed when accessed using one of the specified methods
      *
@@ -56,12 +61,22 @@ class Router {
         foreach (explode('|', $methods) as $method) {
             $this->routes[$method][] = array(
                 'pattern' => $pattern,
-                'fn' => $fn
+                'fn' => $fn,
+                'module' => $this->module
             );
         }
 
     }
 
+    /**
+     * Set the module that will be used in the constructor for all Controllers
+     * that match the path of all future matches.
+     * @param Module $module
+     */
+    public function setModule (Module $module = null)
+    {
+        $this->module = $module;
+    }
 
     /**
      * Shorthand for a route accessed using GET
@@ -284,13 +299,14 @@ class Router {
      * @param string $controller
      * @param string $method
      * @param array $params
+     * @param Module $module
      * @throws Exceptions\DataNotFound
      * @throws InvalidParameter
      * @return mixed
      */
-    private function handleController ($controller, $method, $params)
+    private function handleController ($controller, $method, $params, $module = null)
     {
-        $controller = \Neuron\Tools\ControllerFactory::getInstance ()->getController ($controller);
+        $controller = ControllerFactory::getInstance ()->getController ($controller, $module);
 
         if (is_callable (array ($controller, $method)))
         {

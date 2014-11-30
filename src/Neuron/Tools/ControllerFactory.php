@@ -10,6 +10,7 @@ namespace Neuron\Tools;
 
 
 use Neuron\Exceptions\DataNotFound;
+use Neuron\Interfaces\Module;
 
 class ControllerFactory {
 
@@ -33,17 +34,18 @@ class ControllerFactory {
 
     /**
      * @param $name
+     * @param Module $module
      * @return mixed
      * @throws DataNotFound
      */
-    public function getController ($name)
+    public function getController ($name, Module $module = null)
     {
-        if (class_exists ($name))
-        {
-            $this->controllers[$name] = new $name ();
-        }
-        else {
-            throw new DataNotFound ("Controller not found: " . $name);
+        if (!isset ($this->controllers[$name])) {
+            if (class_exists ($name)) {
+                $this->controllers[$name] = new $name ($module);
+            } else {
+                throw new DataNotFound ("Controller not found: " . $name);
+            }
         }
 
         return $this->controllers[$name];
