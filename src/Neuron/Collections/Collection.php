@@ -18,7 +18,7 @@ abstract class Collection
 	implements Iterator, ArrayAccess, Countable
 {
 	private $position = 0;
-	private $data;
+	private $data = array ();
 
 	protected function setCollectionValues (array $data)
 	{
@@ -73,7 +73,7 @@ abstract class Collection
 		 if (is_null ($offset))
 		 {
 			 $index = array_push ($this->data, $value);
-			 $this->trigger ('add', $value, $index);
+			 $this->trigger ('add', $value, $iundex);
 		 }
 		 else
 		 {
@@ -101,7 +101,6 @@ abstract class Collection
 	 public function offsetUnset($offset)
 	 {
 		 unset ($this->data[$offset]);
-		 $this->trigger ('remove', $offset);
 	 }
 
 	/**
