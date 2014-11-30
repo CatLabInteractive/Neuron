@@ -338,6 +338,33 @@ class Template
 	}
 
 	/**
+	 * Include a single template inside another template.
+	 */
+	private function template ($template)
+	{
+		ob_start();
+
+		foreach (self::$shares as $k => $v) {
+			${$k} = $v;
+		}
+
+		foreach ($this->values as $k => $v) {
+			${$k} = $v;
+		}
+
+		if ($ctlbtmpltfiles = $this->getFilenames($template)) {
+			foreach ($ctlbtmpltfiles as $ctlbtmpltfile) {
+				include $ctlbtmpltfile;
+			}
+		}
+
+		$val = ob_get_contents();
+		ob_end_clean();
+
+		return $val;
+	}
+
+	/**
 	 * @param string $name
 	 * @param string $method
 	 * @return string
