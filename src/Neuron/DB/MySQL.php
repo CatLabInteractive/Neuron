@@ -1,6 +1,7 @@
 <?php
 namespace Neuron\DB;
 
+use Neuron\Config;
 use Neuron\Models\Logger;
 use Exception;
 use mysqli;
@@ -23,9 +24,15 @@ class MySQL extends Database
 			
 			try
 			{
-				$this->connection = new MySQLi (DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
+				$this->connection = new MySQLi
+				(
+					Config::get ('database.mysql.host'),
+					Config::get ('database.mysql.username'),
+					Config::get ('database.mysql.password'),
+					Config::get ('database.mysql.database')
+				);
 
-				$this->connection->query ('SET names "' . DB_CHARSET . '"');
+				$this->connection->query ('SET names "' . Config::get ('database.mysql.charset') . '"');
 				//$this->connection->query ("SET time_zone = '+00:00'");
 			}
 			catch (Exception $e)
