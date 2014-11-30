@@ -9,20 +9,23 @@
 namespace Neuron\Interfaces;
 
 
+use Neuron\Router;
+
 interface Module
 {
     /**
      * Set template paths, config vars, etc
+     * @param string $routepath The prefix that should be added to all route paths.
      * @return void
      */
-    public function initialize ();
+    public function initialize ($routepath);
 
     /**
      * Register the routes required for this module.
-     * @param \Neuron\Router $router
+     * @param Router $router
      * @param $prefix
      * @return mixed
      */
-    public function setRoutes (\Neuron\Router $router, $prefix);
+    public function setRoutes (Router $router, $prefix);
 
 }
