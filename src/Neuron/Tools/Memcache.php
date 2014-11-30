@@ -1,6 +1,6 @@
 <?php
 
-namespace Neuron\Core;
+namespace Neuron\Tools;
 
 if (!defined ('MEMCACHE_PREFIX'))
 {
@@ -9,7 +9,7 @@ if (!defined ('MEMCACHE_PREFIX'))
 
 /**
  * Class Memcache
- * @package Neuron\Core\Memcache
+ * @package Neuron\Tools\Memcache
  */
 class Memcache
 {

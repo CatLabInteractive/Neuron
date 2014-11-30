@@ -11,8 +11,10 @@ namespace Neuron\Collections;
 use ArrayAccess;
 use Countable;
 use Iterator;
+use Neuron\Models\Observable;
 
 abstract class Collection
+	extends Observable
 	implements Iterator, ArrayAccess, Countable
 {
 	private $position = 0;
@@ -70,11 +72,20 @@ abstract class Collection
 	 {
 		 if (is_null ($offset))
 		 {
-			 $this->data[] = $value;
+			 $index = array_push ($this->data, $value);
+			 $this->trigger ('add', $value, $index);
 		 }
 		 else
 		 {
-		 	$this->data[$offset] = $value;
+		 	if (isset ($this->data[$offset]))
+		    {
+			    $this->trigger ('add', $value, $offset);
+		    }
+			else {
+				$this->trigger ('set', $value, $offset);
+			}
+
+			$this->data[$offset] = $value;
 		 }
 	 }
 
@@ -90,6 +101,7 @@ abstract class Collection
 	 public function offsetUnset($offset)
 	 {
 		 unset ($this->data[$offset]);
+		 $this->trigger ('remove', $offset);
 	 }
 
 	/**

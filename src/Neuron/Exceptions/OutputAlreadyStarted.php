@@ -7,7 +7,7 @@ use Neuron\Core\Error;
 
 
 class OutputAlreadyStarted
-	extends Error
+	extends \Exception
 {
 	private $output;
 
@@ -16,4 +16,3 @@ class OutputAlreadyStarted
 		$this->output = $output;
 	}
 }
-?>
