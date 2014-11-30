@@ -58,7 +58,8 @@ class Router {
     public function match($methods, $pattern, $fn) {
 
         // Regex are too pro, bro!
-        $pattern = preg_replace ('//\{\w+\}/', '(/\w+)?', $pattern);
+        $pattern = preg_replace ('/\/\{\w+\\?}/', '(/\w+)?', $pattern);
+        $pattern = preg_replace ('/\/\{\w+\}/', '(/\w+)', $pattern);
 
         $pattern = $this->baseroute . '/' . trim($pattern, '/');
         $pattern = $this->baseroute ? rtrim($pattern, '/') : $pattern;
