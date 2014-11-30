@@ -150,7 +150,7 @@ class Router {
      */
     public function module ($prefix, Module $module)
     {
-        $module->initialize ();
+        $module->initialize ($prefix);
 
         $this->setModule ($module);
         $module->setRoutes ($this, $prefix);
