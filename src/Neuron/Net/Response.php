@@ -90,7 +90,7 @@ class Response
 		return $in;
 	}
 
-	public static function error ($data)
+	public static function error ($data, $error_code = 500)
 	{
 		$in = new self ();
 		$in->setData ($data);

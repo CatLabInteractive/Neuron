@@ -32,6 +32,8 @@ abstract class Entity {
 
 	private $application;
 
+	const STATUS_NOTFOUND = 404;
+
 	/**
 	 * Serialize & deserialize requests
 	 * @param $data
