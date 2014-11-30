@@ -73,7 +73,7 @@ abstract class Collection
 		 if (is_null ($offset))
 		 {
 			 $index = array_push ($this->data, $value);
-			 $this->trigger ('add', $value, $iundex);
+			 $this->trigger ('add', $value, $index);
 		 }
 		 else
 		 {
