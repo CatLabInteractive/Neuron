@@ -13,6 +13,11 @@
             "role" : "Developer"
         }
     ],
+
+    "require" : {
+        "ext-gettext" : "*"
+    },
+
     "autoload": {
         "psr-4" : {
             "Neuron\\" : "src/Neuron/"
