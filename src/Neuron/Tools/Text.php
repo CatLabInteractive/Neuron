@@ -33,7 +33,7 @@ class Text {
 	 */
 	public function addPath ($domain, $path)
 	{
-		bindtextdomain ($domain, $path);
+		\bindtextdomain ($domain, $path);
 	}
 
 	/**
