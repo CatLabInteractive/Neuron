@@ -13,9 +13,6 @@ use Neuron\Application;
 use Neuron\Config;
 use Neuron\Exceptions\DataNotSet;
 use Neuron\Exceptions\InvalidParameter;
-use Neuron\MapperFactory;
-use Neuron\Models\User;
-use Neuron\Net\Session;
 
 abstract class Entity {
 
