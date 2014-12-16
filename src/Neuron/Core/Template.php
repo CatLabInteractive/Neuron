@@ -380,7 +380,14 @@ class Template
 			$call = array (self::$helpers[$name], $method);
 			if (is_callable ($call))
 			{
-				return call_user_func_array ($call, $args);
+				$out = call_user_func_array ($call, $args);
+				if ($out instanceof Template)
+				{
+					return $out->parse ();
+				}
+				else {
+					return $out;
+				}
 			}
 			else {
 				return '<p class="error">Method ' . $method . ' on helper ' . $name . ' is not callable.</p>';
