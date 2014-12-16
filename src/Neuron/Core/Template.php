@@ -369,7 +369,7 @@ class Template
 	 * @param string $method
 	 * @return string
 	 */
-	private function help ($name, $method)
+	private function help ($name, $method = 'helper')
 	{
 		$args = func_get_args ();
 		array_shift ($args);
