@@ -121,7 +121,7 @@ class Application
 	{
 		if (!isset ($this->sessionHandler))
 		{
-			$this->sessionHandler = new DefaultSessionHandler ();
+			$this->sessionHandler = new SessionHandler ();
 		}
 
 		return $this->sessionHandler;
