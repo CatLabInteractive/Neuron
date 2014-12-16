@@ -350,15 +350,6 @@ class Request
 	 */
 	public function setUser (User $user)
 	{
-		if (!isset ($this->user) && !$this->usercallbackcalled)
-		{
-			$this->usercallbackcalled = true;
-
-			if (isset ($this->usercallback)) {
-				$this->user = call_user_func ($this->usercallback, $this);
-			}
-		}
-
 		$this->user = $user;
 	}
 
@@ -377,6 +368,15 @@ class Request
 	 */
 	public function getUser()
 	{
+		if (!isset ($this->user) && !$this->usercallbackcalled)
+		{
+			$this->usercallbackcalled = true;
+
+			if (isset ($this->usercallback)) {
+				$this->user = call_user_func ($this->usercallback, $this);
+			}
+		}
+
 		return $this->user;
 	}
 } 
