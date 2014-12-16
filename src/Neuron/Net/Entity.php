@@ -33,6 +33,7 @@ abstract class Entity {
 
 	private $application;
 
+	const STATUS_OKAY = 200;
 	const STATUS_NOTFOUND = 404;
 
 	/**
