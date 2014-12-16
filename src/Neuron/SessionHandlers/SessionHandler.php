@@ -83,6 +83,7 @@ class SessionHandler
 
 	public function register ()
 	{
+
 		session_set_save_handler(
 			array($this, 'open'),
 			array($this, 'close'),

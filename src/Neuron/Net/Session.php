@@ -7,8 +7,6 @@ use Neuron\SessionHandlers\SessionHandler;
 
 class Session
 {
-	private $values;
-	
 	/** @var SessionHandler */
 	private $handler;
 
@@ -66,19 +64,19 @@ class Session
 
 	public function set ($key, $value)
 	{
-		$this->values[$key] = $value;
+		$_SESSION[$key] = $value;
 	}
 
 	public function all ()
 	{
-		return $this->values;
+		return $_SESSION;
 	}
 
 	public function get ($key)
 	{
-		if (isset ($this->values[$key]))
+		if (isset ($_SESSION[$key]))
 		{
-			return $this->values[$key];
+			return $_SESSION[$key];
 		}
 		return null;
 	}
