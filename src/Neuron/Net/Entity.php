@@ -9,21 +9,25 @@
 namespace Neuron\Net;
 
 
+use Neuron\Application;
+use Neuron\Config;
+use Neuron\Exceptions\DataNotSet;
 use Neuron\Exceptions\InvalidParameter;
 use Neuron\MapperFactory;
 use Neuron\Models\User;
+use Neuron\Net\Session;
 
 abstract class Entity {
 
 	const CHECK_SIGNATURE = false;
-	
-	/** @var User */
-	private $user;
+
+	/** @var Session $session */
+	private $session;
+
 	private $body;
 	private $path;
 	private $post;
 	private $headers;
-	private $session;
 	private $data;
 	private $cookies;
 	
@@ -57,15 +61,6 @@ abstract class Entity {
 			throw new InvalidParameter ("Leave now, and Never come Back! *gollem, gollem* (Decoded request signature mismatch).");
 		}
 
-		if (isset ($data['session']) && isset ($data['session']['user']))
-		{
-			$user = MapperFactory::getUserMapper ()->getFromId ($data['session']['user']);
-			if ($user)
-			{
-				$model->setUser ($user);
-			}
-		}
-
 		// The body. If data is found, body is not used.
 		if (isset ($data['data']) && !empty ($data['data']))
 		{
@@ -75,11 +70,6 @@ abstract class Entity {
 		else if (isset ($data['body']))
 		{
 			$model->setBody ($data['body']);
-		}
-
-		if (isset ($data['session']))
-		{
-			$model->setSession ($data['session']);
 		}
 
 		if (isset ($data['headers']))
@@ -123,7 +113,6 @@ abstract class Entity {
 		
 		$data['body'] = $this->getBody ();
 
-		$data['session'] = $this->getSession ();
 		$data['headers'] = $this->getHeaders ();
 		$data['cookies'] = $this->getCookies ();
 		$data['post'] = $this->getPost ();
@@ -152,7 +141,7 @@ abstract class Entity {
 			$txt .= $k . ":" . json_encode ($v) . "|";
 		}
 
-		$txt .= APP_SECRET_KEY;
+		$txt .= Config::get ('app.secret');
 
 		return $txt;
 	}
@@ -170,48 +159,33 @@ abstract class Entity {
 	}
 
 	/**
-	 * @param array|string $key
-	 * @param mixed $value
-	 */
-	public function setSession ($key, $value = null)
-	{
-		if (is_array ($key) && is_null ($value))
-		{
-			$this->session = $key;
-		}
-		else
-		{
-			if (!isset ($this->session))
-			{
-				$this->session = array ();
-			}
-			$this->session[$key] = $value;
-		}
-	}
-
-	/**
-	 * @return mixed
+	 * @throws DataNotSet
+	 * @return \Neuron\Net\Session
 	 */
 	public function getSession ()
 	{
+		if (!isset ($this->session))
+		{
+			// First check the router
+			if ($this instanceof Response) {
+				$router = Application::getInstance ()->getRouter ();
+				if ($router) {
+					$this->session = $router->getRequest ()->getSession ();
+				}
+			}
+			else {
+				throw new DataNotSet ("No session is set in the request.");
+			}
+		}
 		return $this->session;
 	}
 
 	/**
-	 * @param User $user
+	 * @param Session $session
 	 */
-	public function setUser (User $user)
+	public function setSession (Session $session)
 	{
-		$this->user = $user;
-		$this->setSession ('user', $user->getId ());
-	}
-
-	/**
-	 * @return User
-	 */
-	public function getUser ()
-	{
-		return $this->user;
+		$this->session = $session;
 	}
 
 	/**

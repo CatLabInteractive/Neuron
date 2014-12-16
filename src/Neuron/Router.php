@@ -169,7 +169,6 @@ class Router {
      */
     public function run (Request $request)
     {
-
         // Define which method we need to handle
         $this->method = $request->getMethod ();
 
@@ -199,6 +198,14 @@ class Router {
 
     }
 
+    /**
+     * During execution of the dispatch, this method will return the request.
+     * @return Request|null
+     */
+    public function getRequest ()
+    {
+        return $this->request;
+    }
 
     /**
      * Set the 404 handling function

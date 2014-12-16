@@ -8,17 +8,26 @@
 
 namespace Neuron;
 
+use Neuron\Core\Template;
 use Neuron\Exceptions\DataNotSet;
+use Neuron\Models\Observable;
 use Neuron\Net\Request;
-use Neuron\Router;
+use Neuron\Net\Session;
+use Neuron\SessionHandlers\DefaultSessionHandler;
+use Neuron\SessionHandlers\SessionHandler;
 
-class Application {
+class Application
+	extends Observable
+{
 
 	/** @var Router $router */
 	private $router;
 
 	/** @var string $locale */
 	private $locale;
+
+	/** @var SessionHandler $sessionHandler */
+	private $sessionHandler;
 
 	private static $in;
 
@@ -39,7 +48,7 @@ class Application {
 	 */
 	private function __construct ()
 	{
-		\Neuron\Core\Template::addPath (dirname (dirname (__FILE__)) . '/templates/', '', -1);
+		Template::addPath (dirname (dirname (__FILE__)) . '/templates/', '', -1);
 	}
 
 	/**
@@ -48,6 +57,15 @@ class Application {
 	public function setRouter (Router $router)
 	{
 		$this->router = $router;
+		$this->trigger ('router:set');
+	}
+
+	/**
+	 * @return Router
+	 */
+	public function getRouter ()
+	{
+		return $this->router;
 	}
 
 	/**
@@ -66,6 +84,7 @@ class Application {
 		{
 			throw new DataNotSet ("Locale " . $locale . " is not available on this platform.");
 		}
+		$this->trigger ('locale:set');
 	}
 
 	/**
@@ -88,10 +107,36 @@ class Application {
 	}
 
 	/**
+	 * @param SessionHandler $handler
+	 */
+	public function setSessionHandler (SessionHandler $handler)
+	{
+		$this->sessionHandler = $handler;
+	}
+
+	/**
+	 * @return SessionHandler
+	 */
+	private function getSessionHandler ()
+	{
+		if (!isset ($this->sessionHandler))
+		{
+			$this->sessionHandler = new DefaultSessionHandler ();
+		}
+
+		return $this->sessionHandler;
+	}
+
+	/**
+	 * @param Request $request
 	 * @throws DataNotSet
 	 */
-	public function dispatch (\Neuron\Net\Request $request = null)
+	public function dispatch (Request $request = null)
 	{
+		// Trigger initialize
+		$this->trigger ('dispatch:initialize');
+
+		// Check locales
 		$this->checkLocale ();
 
 		if (!isset ($this->router))
@@ -104,6 +149,26 @@ class Application {
 			$request = Request::fromInput ();
 		}
 
+		// Set session from the session handler
+		$session = new Session ($this->getSessionHandler ());
+		$session->connect ();
+
+		// Set session in request
+		$request->setSession ($session);
+
+		// Trigger before
+		$this->trigger ('dispatch:before', $request);
+
+		// Run router
 		$this->router->run ($request);
+
+		// Trigger dispatch
+		$this->trigger ('dispatch:after', $request);
+
+		// Disconnect the session
+		$session->disconnect ();
+
+		// End
+		$this->trigger ('dispatch:terminate');
 	}
 }

@@ -19,11 +19,6 @@ abstract class SessionHandler
 	{
 		if (!$this->started)
 		{
-			/*
-			var_dump ($_COOKIE);
-			var_dump ($_REQUEST);
-			*/
-			
 			if (isset($sessionId))
 			{
 				session_id ($sessionId);
@@ -43,14 +38,8 @@ abstract class SessionHandler
 			
 			else 
 			{
-				/**
-				 * @TODO check if this is proper
-				 * 
-				 * We're using uniqid to set the session id.
-				 */
-				$sid = uniqid ('session', true);
-				session_id ($sid);
-				Logger::getInstance()->log ("Starting brand new session with id " . $sid, false, 'cyan');
+				session_regenerate_id ();
+				Logger::getInstance()->log ("Starting brand new session with id " . session_id (), false, 'cyan');
 			}
 
 			session_start ();

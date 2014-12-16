@@ -10,10 +10,7 @@ namespace Neuron\Net;
 
 
 use Neuron\Core\Tools;
-use Neuron\Exceptions\InvalidParameter;
-use Neuron\Net\InputStream;
-use Neuron\MapperFactory;
-use Neuron\Models\User;
+use Neuron\Interfaces\Models\User;
 
 class Request
 	extends Entity {
@@ -23,6 +20,14 @@ class Request
 	const METHOD_PATCH = 'PATCH';
 	const METHOD_PUT = 'PUT';
 	const METHOD_OPTIONS = 'OPTIONS';
+
+	/** @var User $user */
+	private $user;
+
+	/** @var callable $usercallback */
+	private $usercallback;
+
+	private $usercallbackcalled = false;
 
 	/**
 	 * @return Request
@@ -337,5 +342,41 @@ class Request
 			return $default;
 		}
 		return $value;
+	}
+
+	/**
+	 * Helper method to make it easier for authentication modules
+	 * @param User $user
+	 */
+	public function setUser (User $user)
+	{
+		if (!isset ($this->user) && !$this->usercallbackcalled)
+		{
+			$this->usercallbackcalled = true;
+
+			if (isset ($this->usercallback)) {
+				$this->user = call_user_func ($this->usercallback, $this);
+			}
+		}
+
+		$this->user = $user;
+	}
+
+	/**
+	 * To allow lazy loading of the user object, set a callback here.
+	 * Method will be called with request as parameter and only once a script.
+	 * @param callable $callback
+	 */
+	public function setUserCallback (callable $callback)
+	{
+		$this->usercallback = $callback;
+	}
+
+	/**
+	 * @return User
+	 */
+	public function getUser()
+	{
+		return $this->user;
 	}
 } 
