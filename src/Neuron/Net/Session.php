@@ -69,6 +69,11 @@ class Session
 		$this->values[$key] = $value;
 	}
 
+	public function all ()
+	{
+		return $this->values;
+	}
+
 	public function get ($key)
 	{
 		if (isset ($this->values[$key]))
