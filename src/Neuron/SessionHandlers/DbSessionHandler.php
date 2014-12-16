@@ -8,12 +8,13 @@
 
 namespace Neuron\SessionHandlers;
 
+use Neuron\DB\Database;
 use Neuron\DB\Query;
 
 class DbSessionHandler
 	extends SessionHandler
 {
-	/** @var \Neuron\DB\Database $db */
+	/** @var Database $db */
 	private $db;
 	private $sessions = array ();
 
@@ -21,7 +22,7 @@ class DbSessionHandler
 	public function open ( $save_path , $name )
 	{
 		// Force loading of query.
-		$this->db = \Neuron\DB\Database::getInstance ();
+		$this->db = Database::getInstance ();
 		
 		// Nothing to do.
 		return true;

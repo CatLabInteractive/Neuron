@@ -11,35 +11,28 @@ namespace Neuron\SessionHandlers;
 use Neuron\Models\Logger;
 use Neuron\Core\Tools;
 
-abstract class SessionHandler
+class SessionHandler
+	extends \SessionHandler
 {
 	private $started = false;
 
 	public final function start ($sessionId = null)
 	{
-		if (!$this->started)
-		{
-			if (isset($sessionId))
-			{
+		if (!$this->started) {
+			if (isset($sessionId)) {
 				session_id ($sessionId);
 
-				ini_set("session.use_cookies",0);
-				ini_set("session.use_only_cookies",0);
-				ini_set("session.use_trans_sid",0); # Forgot this one!
+				ini_set ("session.use_cookies", 0);
+				ini_set ("session.use_only_cookies", 0);
+				ini_set ("session.use_trans_sid", 0); # Forgot this one!
 
-				Logger::getInstance()->log ("Starting session with provided id " . $sessionId, false, 'cyan');
-			}
-			
-			else if ($defaultSession = Tools::getInput ($_COOKIE, 'PHPSESSID', 'varchar'))
-			{
-				Logger::getInstance()->log ("Starting session with default cookie " . $defaultSession, false, 'cyan');
+				Logger::getInstance ()->log ("Starting session with provided id " . $sessionId, false, 'cyan');
+			} else if ($defaultSession = Tools::getInput ($_COOKIE, 'PHPSESSID', 'varchar')) {
+				Logger::getInstance ()->log ("Starting session with default cookie " . $defaultSession, false, 'cyan');
 				session_id ($defaultSession);
-			}
-			
-			else 
-			{
+			} else {
 				session_regenerate_id ();
-				Logger::getInstance()->log ("Starting brand new session with id " . session_id (), false, 'cyan');
+				Logger::getInstance ()->log ("Starting brand new session with id " . session_id (), false, 'cyan');
 			}
 
 			session_start ();
@@ -50,19 +43,43 @@ abstract class SessionHandler
 
 	public final function stop ()
 	{
-		Logger::getInstance()->log ("Closing session with id " . session_id (), false, 'cyan');
+		Logger::getInstance ()->log ("Closing session with id " . session_id (), false, 'cyan');
 
 		session_write_close ();
 		$this->started = false;
 	}
 
 	/* Methods */
-	abstract public function close (  );
-	abstract public function destroy ( $session_id );
-	abstract public function gc ( $maxlifetime );
-	abstract public function open ( $save_path , $name );
-	abstract public function read ( $session_id );
-	abstract public function write ( $session_id , $session_data );
+	public function close ()
+	{
+		return parent::close ();
+	}
+
+	public function destroy ($session_id)
+	{
+		return parent::destroy ($session_id);
+	}
+
+	public function gc ( $maxlifetime )
+	{
+		return parent::gc ($maxlifetime);
+	}
+
+	public function open ( $save_path , $name )
+	{
+		return parent::open ( $save_path, $name );
+	}
+
+	public function read ( $session_id )
+	{
+		return parent::read ($session_id);
+	}
+
+
+	public function write ( $session_id , $session_data )
+	{
+		return parent::write ($session_id, $session_data);
+	}
 
 	public function register ()
 	{
