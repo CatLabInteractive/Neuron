@@ -115,6 +115,9 @@ class Logger
 			$this->flushOutput();
 		}
 
+		if (count ($this->log) > 5000)
+			array_shift ($this->log);
+
 		$this->log[] = $log;
 
 		return new Timer ($string);
