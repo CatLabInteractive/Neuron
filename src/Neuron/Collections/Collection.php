@@ -100,7 +100,9 @@ abstract class Collection
 	  */
 	 public function offsetUnset($offset)
 	 {
+		 $value = isset ($this->data[$offset]) ? $this->data[$offset] : null;
 		 unset ($this->data[$offset]);
+		 $this->trigger ('unset', $value, $offset);
 	 }
 
 	/**
