@@ -36,6 +36,8 @@ abstract class Entity {
 	const STATUS_OKAY = 200;
 	const STATUS_NOTFOUND = 404;
 
+	const STATUS_UNAUTHORIZED = 403;
+
 	/**
 	 * Serialize & deserialize requests
 	 * @param $data
