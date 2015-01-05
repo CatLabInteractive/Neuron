@@ -18,7 +18,10 @@ class SessionHandler
 
 	public final function start ($sessionId = null)
 	{
-		if (!$this->started) {
+		if (!$this->started)
+		{
+			$this->register ();
+
 			if (isset($sessionId)) {
 				session_id ($sessionId);
 
