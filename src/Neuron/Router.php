@@ -95,6 +95,7 @@ class Router {
      *
      * @param string $pattern A route pattern such as /about/system
      * @param mixed $fn The handling function to be executed
+     * @return \Neuron\Models\Route
      */
     public function get($pattern, $fn) {
         return $this->match('GET', $pattern, $fn);
@@ -106,6 +107,7 @@ class Router {
      *
      * @param string $pattern A route pattern such as /about/system
      * @param mixed $fn The handling function to be executed
+     * @return \Neuron\Models\Route
      */
     public function post($pattern, $fn) {
         return $this->match('POST', $pattern, $fn);
@@ -117,6 +119,7 @@ class Router {
      *
      * @param string $pattern A route pattern such as /about/system
      * @param mixed $fn The handling function to be executed
+     * @return \Neuron\Models\Route
      */
     public function patch($pattern, $fn) {
         return $this->match('PATCH', $pattern, $fn);
@@ -128,6 +131,7 @@ class Router {
      *
      * @param string $pattern A route pattern such as /about/system
      * @param mixed $fn The handling function to be executed
+     * @return \Neuron\Models\Route
      */
     public function delete($pattern, $fn) {
         return $this->match('DELETE', $pattern, $fn);
@@ -139,6 +143,7 @@ class Router {
      *
      * @param string $pattern A route pattern such as /about/system
      * @param mixed $fn The handling function to be executed
+     * @return \Neuron\Models\Route
      */
     public function put($pattern, $fn) {
         return $this->match('PUT', $pattern, $fn);
@@ -149,6 +154,7 @@ class Router {
      *
      * @param string $pattern A route pattern such as /about/system
      * @param mixed $fn The handling function to be executed
+     * @return \Neuron\Models\Route
      */
     public function options($pattern, $fn) {
         return $this->match('OPTIONS', $pattern, $fn);
@@ -286,7 +292,7 @@ class Router {
      * @param string $filtername
      * @param callable $method
      */
-    public function addFilter ($filtername, $method)
+    public function addFilter ($filtername, callable $method)
     {
         $this->filters[$filtername] = $method;
     }
@@ -306,9 +312,6 @@ class Router {
             // Check if exist
             if (!isset ($this->filters[$filter]))
                 throw new InvalidParameter ("Filter " . $filter . " is not registered in the router.");
-
-            if (!is_callable ($this->filters[$filter]))
-                throw new InvalidParameter ("Filter " . $filter . " is not callable.");
 
             $response = call_user_func_array ($this->filters[$filter], array ($this->request));
 
