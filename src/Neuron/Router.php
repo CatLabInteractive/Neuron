@@ -58,6 +58,7 @@ class Router {
      * @param string $methods Allowed methods, | delimited
      * @param string $pattern A route pattern such as /about/system
      * @param mixed $fn The handling function to be executed
+     * @return \Neuron\Models\Route
      */
     public function match ($methods, $pattern, $fn) {
 
@@ -76,6 +77,7 @@ class Router {
             $this->routes[$method][] = $route;
         }
 
+        return $route;
     }
 
     /**
