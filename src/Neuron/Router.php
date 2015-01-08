@@ -11,6 +11,7 @@ namespace Neuron;
 use Neuron\Exceptions\InvalidParameter;
 use Neuron\Interfaces\Controller;
 use Neuron\Interfaces\Module;
+use Neuron\Models\Route;
 use Neuron\Net\Request;
 use Neuron\Net\Response;
 use Neuron\Tools\ControllerFactory;
@@ -48,6 +49,9 @@ class Router {
     /** @var Module|null */
     private $module = null;
 
+    /** @var callable[] */
+    private $filters = array ();
+
     /**
      * Store a route and a handling function to be executed when accessed using one of the specified methods
      *
@@ -64,12 +68,12 @@ class Router {
         $pattern = $this->baseroute . '/' . trim($pattern, '/');
         $pattern = $this->baseroute ? rtrim($pattern, '/') : $pattern;
 
+        $route = new Route ($pattern);
+        $route->setFunction ($fn);
+        $route->setModule ($this->module);
+
         foreach (explode('|', $methods) as $method) {
-            $this->routes[$method][] = array(
-                'pattern' => $pattern,
-                'fn' => $fn,
-                'module' => $this->module
-            );
+            $this->routes[$method][] = $route;
         }
 
     }
@@ -91,7 +95,7 @@ class Router {
      * @param mixed $fn The handling function to be executed
      */
     public function get($pattern, $fn) {
-        $this->match('GET', $pattern, $fn);
+        return $this->match('GET', $pattern, $fn);
     }
 
 
@@ -102,7 +106,7 @@ class Router {
      * @param mixed $fn The handling function to be executed
      */
     public function post($pattern, $fn) {
-        $this->match('POST', $pattern, $fn);
+        return $this->match('POST', $pattern, $fn);
     }
 
 
@@ -113,7 +117,7 @@ class Router {
      * @param mixed $fn The handling function to be executed
      */
     public function patch($pattern, $fn) {
-        $this->match('PATCH', $pattern, $fn);
+        return $this->match('PATCH', $pattern, $fn);
     }
 
 
@@ -124,7 +128,7 @@ class Router {
      * @param mixed $fn The handling function to be executed
      */
     public function delete($pattern, $fn) {
-        $this->match('DELETE', $pattern, $fn);
+        return $this->match('DELETE', $pattern, $fn);
     }
 
 
@@ -135,7 +139,7 @@ class Router {
      * @param mixed $fn The handling function to be executed
      */
     public function put($pattern, $fn) {
-        $this->match('PUT', $pattern, $fn);
+        return $this->match('PUT', $pattern, $fn);
     }
 
     /**
@@ -145,7 +149,7 @@ class Router {
      * @param mixed $fn The handling function to be executed
      */
     public function options($pattern, $fn) {
-        $this->match('OPTIONS', $pattern, $fn);
+        return $this->match('OPTIONS', $pattern, $fn);
     }
 
     /**
@@ -184,7 +188,7 @@ class Router {
         if ($numHandled == 0) {
             if ($this->notFound) {
                 //call_user_func($this->notFound);
-                $this->handleMatch ($this->notFound, array (), null);
+                $this->handleMatch ($this->notFound, array ());
             }
             else {
 
@@ -212,14 +216,16 @@ class Router {
      * @param object $fn The function to be executed
      */
     public function set404($fn) {
-        $this->notFound = $fn;
+        $this->notFound = new Route ("404");
+        $this->notFound->setFunction ($fn);
     }
 
 
     /**
      * Handle a a set of routes: if a match is found, execute the relating handling function
      * @param array $routes Collection of route patterns and their handling functions
-     * @return Response The response
+     * @throws InvalidParameter
+     * @return \Neuron\Net\Response The response
      */
     private function handle ($routes) {
 
@@ -231,8 +237,11 @@ class Router {
         // Loop all routes
         foreach ($routes as $route) {
 
+            if (!$route instanceof Route)
+                throw new InvalidParameter ("Route contains invalid models.");
+
             // we have a match!
-            if (preg_match_all('#^' . $route['pattern'] . '$#', $uri, $matches, PREG_OFFSET_CAPTURE)) {
+            if (preg_match_all('#^' . $route->getRoute () . '$#', $uri, $matches, PREG_OFFSET_CAPTURE)) {
 
                 // Rework matches to only contain the matches, not the orig string
                 $matches = array_slice($matches, 1);
@@ -253,7 +262,7 @@ class Router {
                 }, $matches, array_keys($matches));
 
                 // call the handling function with the URL parameters
-                $this->handleMatch ($route['fn'], $params, $route['module']);
+                $this->handleMatch ($route, $params);
                 //call_user_func_array($route['fn'], $params);
 
                 // yay!
@@ -271,13 +280,43 @@ class Router {
     }
 
     /**
-     * @param $function
+     * Add a filter that can be added.
+     * @param string $filtername
+     * @param callable $method
+     */
+    public function addFilter ($filtername, $method)
+    {
+        $this->filters[$filtername] = $method;
+    }
+
+    /**
+     * @param Route $route
      * @param $params
-     * @param Module $module
      * @throws InvalidParameter
      */
-    private function handleMatch ($function, $params, Module $module = null)
+    private function handleMatch (Route $route, $params)
     {
+        $function = $route->getFunction ();
+
+        // First handle the filters
+        foreach ($route->getFilters () as $filter)
+        {
+            // Check if exist
+            if (!isset ($this->filters[$filter]))
+                throw new InvalidParameter ("Filter " . $filter . " is not registered in the router.");
+
+            if (!is_callable ($this->filters[$filter]))
+                throw new InvalidParameter ("Filter " . $filter . " is not callable.");
+
+            $response = call_user_func_array ($this->filters[$filter], array ($this->request));
+
+            // If output was not TRUE, handle the filter return value as output.
+            if ($response !== true) {
+                $this->output ($response);
+                return;
+            }
+        }
+
         if (is_callable ($function))
         {
             $response = call_user_func_array($function, $params);
@@ -291,13 +330,18 @@ class Router {
                     throw new InvalidParameter ("Controller@method syntax not valid for " . $function);
                 }
 
-                $response = $this->handleController ($param[0], $param[1], $params, $module);
+                $response = $this->handleController ($param[0], $param[1], $params, $route->getModule ());
             }
             else {
                 throw new InvalidParameter ("Method not found.");
             }
         }
 
+        $this->output ($response);
+    }
+
+    private function output ($response)
+    {
         if ($response)
         {
             if ($response instanceof Response)
