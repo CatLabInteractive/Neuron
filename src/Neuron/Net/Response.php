@@ -16,6 +16,7 @@ use Neuron\Net\Outputs\JSON;
 use Neuron\Net\Outputs\Output;
 use Neuron\Net\Outputs\PrintR;
 use Neuron\Net\Outputs\Table;
+use Neuron\Net\Outputs\XML;
 
 class Response
 	extends Entity {
@@ -87,6 +88,14 @@ class Response
 		$in = new self ();
 		$in->setData ($data);
 		$in->setOutput (new JSON ());
+		return $in;
+	}
+
+	public static function xml ($data)
+	{
+		$in = new self ();
+		$in->setData ($data);
+		$in->setOutput (new XML ());
 		return $in;
 	}
 
