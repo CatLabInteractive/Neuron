@@ -14,9 +14,17 @@ use XMLWriter;
 
 class XML extends HTML {
 
-	public function __construct ()
+	private $version;
+	private $root;
+	private $parameters;
+	private $itemName;
+
+	public function __construct ($root = 'root', $version = '1.0', array $parameters = array (), $itemName = 'item')
 	{
-		
+		$this->root = $root;
+		$this->version = $version;
+		$this->itemName = $itemName;
+		$this->parameters = $parameters;
 	}
 
 	public static function writexml (XMLWriter $xml, $data, $item_name = 'item')
@@ -149,7 +157,7 @@ class XML extends HTML {
 	{
 		if (!is_string ($response->getData ()))
 		{
-			echo self::output_xml ($response->getData ());
+			echo self::output_xml ($response->getData (), $this->version, $this->root, $this->parameters, $this->itemName);
 		}
 
 		else

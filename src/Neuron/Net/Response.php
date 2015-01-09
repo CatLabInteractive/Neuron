@@ -91,7 +91,15 @@ class Response
 		return $in;
 	}
 
-	public static function xml ($data)
+	/**
+	 * @param $data
+	 * @param string $root XML Root element name
+	 * @param string $version Root element version number
+	 * @param array $parameters Array of root element attributes
+	 * @param string $itemName Generic item name.
+	 * @return Response
+	 */
+	public static function xml ($data, $root = 'root', $version = '1.0', array $parameters = array (), $itemName = 'item')
 	{
 		$in = new self ();
 		$in->setData ($data);
