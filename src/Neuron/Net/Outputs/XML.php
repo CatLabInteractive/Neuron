@@ -155,6 +155,8 @@ class XML extends HTML {
 
 	public function outputContent (Response $response)
 	{
+		header ('Content-type: application/xml');
+
 		if (!is_string ($response->getData ()))
 		{
 			echo self::output_xml ($response->getData (), $this->version, $this->root, $this->parameters, $this->itemName);
