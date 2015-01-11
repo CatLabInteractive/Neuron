@@ -81,6 +81,7 @@ class Route {
 	/**
 	 * Add a filter
 	 * @param $filtername
+	 * @return $this
 	 */
 	public function filter ($filtername)
 	{
@@ -95,6 +96,8 @@ class Route {
 
 			$this->filters[] = $objfilter;
 		}
+
+		return $this;
 	}
 
 	/**
