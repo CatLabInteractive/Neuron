@@ -292,7 +292,7 @@ class Router {
      * @param string $filtername
      * @param callable $method
      */
-    public function addFilter ($filtername, callable $method)
+    public function addFilter ($filtername, callable $method = null)
     {
         $this->filters[$filtername] = $method;
     }
