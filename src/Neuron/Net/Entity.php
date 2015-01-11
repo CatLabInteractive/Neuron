@@ -27,6 +27,9 @@ abstract class Entity {
 	private $headers;
 	private $data;
 	private $cookies;
+
+	/** @var string $error */
+	private $error;
 	
 	/** @var integer $status */
 	private $status;
@@ -270,6 +273,23 @@ abstract class Entity {
 	}
 
 	/**
+	 * Check if request has data
+	 */
+	public function hasData ()
+	{
+		if (!isset ($this->data))
+		{
+			if (!isset ($this->error))
+				$this->setError ('No input data set');
+
+			return false;
+		}
+		else {
+			return true;
+		}
+	}
+
+	/**
 	 * @param string $name
 	 * @param string $value
 	 */
@@ -327,4 +347,19 @@ abstract class Entity {
 		return 200;
 	}
 
+	/**
+	 * @param $error
+	 */
+	public function setError ($error)
+	{
+		$this->error = $error;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getError ()
+	{
+		return $this->error;
+	}
 } 

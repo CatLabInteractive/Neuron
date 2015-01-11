@@ -9,6 +9,7 @@
 namespace Neuron\Net;
 
 
+use Exception;
 use Neuron\Core\Tools;
 use Neuron\Interfaces\Models\User;
 
@@ -65,9 +66,15 @@ class Request
 				case 'text/json':
 
 					$data = json_decode ($model->getBody (), true);
-					$model->setData ($data);
 
-					break;
+					if (!$data) {
+						$model->setError ('JSON decode error: ' . json_last_error_msg ());
+					}
+					else {
+						$model->setData ($data);
+					}
+
+				break;
 			}
 		}
 
