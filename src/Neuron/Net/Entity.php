@@ -186,18 +186,22 @@ abstract class Entity {
 
 	/**
 	 * @param Session $session
+	 * @return $this
 	 */
 	public function setSession (Session $session)
 	{
 		$this->session = $session;
+		return $this;
 	}
 
 	/**
 	 * @param $body
+	 * @return $this
 	 */
 	public function setBody ($body)
 	{
 		$this->body = $body;
+		return $this;
 	}
 
 	/**
@@ -210,10 +214,12 @@ abstract class Entity {
 
 	/**
 	 * @param $id
+	 * @return $this
 	 */
 	public function setApplication ($id)
 	{
 		$this->setSession ('application', $id);
+		return $this;
 	}
 
 	/**
@@ -226,10 +232,12 @@ abstract class Entity {
 
 	/**
 	 * @param $path
+	 * @return $this
 	 */
 	public function setPath ($path)
 	{
 		$this->path = $path;
+		return $this;
 	}
 
 	/**
@@ -242,10 +250,12 @@ abstract class Entity {
 
 	/**
 	 * @param array $post
+	 * @return $this
 	 */
 	public function setPost ($post)
 	{
 		$this->post = $post;
+		return $this;
 	}
 
 	/**
@@ -258,10 +268,12 @@ abstract class Entity {
 
 	/**
 	 * @param mixed $data
+	 * @return $this
 	 */
 	public function setData ($data)
 	{
 		$this->data = $data;
+		return $this;
 	}
 
 	/**
@@ -292,6 +304,7 @@ abstract class Entity {
 	/**
 	 * @param string $name
 	 * @param string $value
+	 * @return $this
 	 */
 	public function setHeader ($name, $value = null)
 	{
@@ -300,14 +313,17 @@ abstract class Entity {
 			$this->headers = array ();
 		}
 		$this->headers[$name] = $value;
+		return $this;
 	}
 
 	/**
 	 * @param array $headers
+	 * @return $this
 	 */
 	public function setHeaders ($headers)
 	{
 		$this->headers = $headers;
+		return $this;
 	}
 
 	/**
@@ -321,6 +337,7 @@ abstract class Entity {
 	public function setCookies ($cookies)
 	{
 		$this->cookies = $cookies;
+		return $this;
 	}
 
 	public function getCookies ()
@@ -331,6 +348,7 @@ abstract class Entity {
 	public function setStatus ($status)
 	{
 		$this->status = $status;
+		return $this;
 	}
 
 	public function isStatusSet ()
@@ -349,10 +367,12 @@ abstract class Entity {
 
 	/**
 	 * @param $error
+	 * @return $this
 	 */
 	public function setError ($error)
 	{
 		$this->error = $error;
+		return $this;
 	}
 
 	/**

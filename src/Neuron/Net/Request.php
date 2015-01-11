@@ -189,10 +189,12 @@ class Request
 
 	/**
 	 * @param $method
+	 * @return $this
 	 */
 	public function setMethod ($method)
 	{
 		$this->method = $method;
+		return $this;
 	}
 
 	/**
@@ -205,10 +207,12 @@ class Request
 
 	/**
 	 * @param $url
+	 * @return $this
 	 */
 	public function setUrl ($url)
 	{
 		$this->url = $url;
+		return $this;
 	}
 
 	/**
@@ -221,18 +225,22 @@ class Request
 
 	/**
 	 * @param array $parameters
+	 * @return $this
 	 */
 	public function setParameters (array $parameters)
 	{
 		$this->parameters = $parameters;
+		return $this;
 	}
 
 	/**
 	 * @param $string
+	 * @return $this
 	 */
 	public function setQueryString ($string)
 	{
 		$this->parameters = parse_url ($string);
+		return $this;
 	}
 
 	/**
@@ -245,10 +253,12 @@ class Request
 
 	/**
 	 * @param $input
+	 * @return $this
 	 */
 	public function setSegments ($input)
 	{
 		$this->input = $input;
+		return $this;
 	}
 
 	/**
@@ -295,6 +305,7 @@ class Request
 	public function setEnvironment ($data)
 	{
 		$this->environment = $data;
+		return $this;
 	}
 
 	public function getEnvironment ()
@@ -369,20 +380,24 @@ class Request
 	/**
 	 * Helper method to make it easier for authentication modules
 	 * @param User $user
+	 * @return $this
 	 */
 	public function setUser (User $user)
 	{
 		$this->user = $user;
+		return $this;
 	}
 
 	/**
 	 * To allow lazy loading of the user object, set a callback here.
 	 * Method will be called with request as parameter and only once a script.
 	 * @param callable $callback
+	 * @return $this
 	 */
 	public function setUserCallback (callable $callback)
 	{
 		$this->usercallback = $callback;
+		return $this;
 	}
 
 	/**

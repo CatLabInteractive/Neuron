@@ -195,11 +195,14 @@ class Response
 	{
 		$this->setBody ($template->parse ());
 		$this->setOutput (new HTML ());
+
+		return $this;
 	}
 
 	public function setOutput (Output $output)
 	{
 		$this->output = $output;
+		return $this;
 	}
 
 	public function isOutputSet ()
