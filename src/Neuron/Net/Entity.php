@@ -362,4 +362,13 @@ abstract class Entity {
 	{
 		return $this->error;
 	}
+
+	/**
+	 * Return an error response.
+	 * @return Response
+	 */
+	public function getErrorResponse ()
+	{
+		return Response::error ($this->getError (), self::STATUS_INVALID_INPUT);
+	}
 } 
