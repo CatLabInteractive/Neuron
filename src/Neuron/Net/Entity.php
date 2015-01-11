@@ -35,6 +35,7 @@ abstract class Entity {
 
 	const STATUS_OKAY = 200;
 	const STATUS_NOTFOUND = 404;
+	const STATUS_INVALID_INPUT = 400;
 
 	const STATUS_UNAUTHORIZED = 403;
 
