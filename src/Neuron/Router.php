@@ -310,10 +310,12 @@ class Router {
         foreach ($route->getFilters () as $filter)
         {
             // Check if exist
-            if (!isset ($this->filters[$filter]))
-                throw new InvalidParameter ("Filter " . $filter . " is not registered in the router.");
+            if (!isset ($this->filters[$filter->getName ()]))
+                throw new InvalidParameter ("Filter " . $filter->getName () . " is not registered in the router.");
 
-            $response = call_user_func_array ($this->filters[$filter], array ($filter));
+            $filter->setRequest ($this->request);
+            $response = $filter->check ($this->filters[$filter->getName ()]);
+            $filter->clearRequest ();
 
             // If output was not TRUE, handle the filter return value as output.
             if ($response !== true) {

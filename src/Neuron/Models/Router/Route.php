@@ -98,7 +98,7 @@ class Route {
 	}
 
 	/**
-	 * @return string[]
+	 * @return Filter[]
 	 */
 	public function getFilters ()
 	{

@@ -82,4 +82,13 @@ class Filter {
 	{
 		return $this->request;
 	}
+
+	/**
+	 * @param $callback
+	 * @return mixed
+	 */
+	public function check ($callback)
+	{
+		return call_user_func_array ($callback, array ($this));
+	}
 }
