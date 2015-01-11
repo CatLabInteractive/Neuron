@@ -6,7 +6,7 @@
  * Time: 15:44
  */
 
-namespace Neuron\Models;
+namespace Neuron\Models\Router;
 
 
 use Neuron\Interfaces\Module;
@@ -84,7 +84,17 @@ class Route {
 	 */
 	public function filter ($filtername)
 	{
-		$this->filters[] = $filtername;
+		$arguments = func_get_args ();
+		array_shift ($arguments);
+
+		$filters = explode (',', $filtername);
+		foreach ($filters as $filter)
+		{
+			$objfilter = new Filter ($filter);
+			$objfilter->setArguments ($arguments);
+
+			$this->filters[] = $objfilter;
+		}
 	}
 
 	/**

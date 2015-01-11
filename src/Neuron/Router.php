@@ -11,7 +11,7 @@ namespace Neuron;
 use Neuron\Exceptions\InvalidParameter;
 use Neuron\Interfaces\Controller;
 use Neuron\Interfaces\Module;
-use Neuron\Models\Route;
+use Neuron\Models\Router\Route;
 use Neuron\Net\Request;
 use Neuron\Net\Response;
 use Neuron\Tools\ControllerFactory;
@@ -58,7 +58,7 @@ class Router {
      * @param string $methods Allowed methods, | delimited
      * @param string $pattern A route pattern such as /about/system
      * @param mixed $fn The handling function to be executed
-     * @return \Neuron\Models\Route
+     * @return Route
      */
     public function match ($methods, $pattern, $fn) {
 
@@ -95,7 +95,7 @@ class Router {
      *
      * @param string $pattern A route pattern such as /about/system
      * @param mixed $fn The handling function to be executed
-     * @return \Neuron\Models\Route
+     * @return Route
      */
     public function get($pattern, $fn) {
         return $this->match('GET', $pattern, $fn);
@@ -107,7 +107,7 @@ class Router {
      *
      * @param string $pattern A route pattern such as /about/system
      * @param mixed $fn The handling function to be executed
-     * @return \Neuron\Models\Route
+     * @return Route
      */
     public function post($pattern, $fn) {
         return $this->match('POST', $pattern, $fn);
@@ -119,7 +119,7 @@ class Router {
      *
      * @param string $pattern A route pattern such as /about/system
      * @param mixed $fn The handling function to be executed
-     * @return \Neuron\Models\Route
+     * @return Route
      */
     public function patch($pattern, $fn) {
         return $this->match('PATCH', $pattern, $fn);
@@ -131,7 +131,7 @@ class Router {
      *
      * @param string $pattern A route pattern such as /about/system
      * @param mixed $fn The handling function to be executed
-     * @return \Neuron\Models\Route
+     * @return Route
      */
     public function delete($pattern, $fn) {
         return $this->match('DELETE', $pattern, $fn);
@@ -143,7 +143,7 @@ class Router {
      *
      * @param string $pattern A route pattern such as /about/system
      * @param mixed $fn The handling function to be executed
-     * @return \Neuron\Models\Route
+     * @return Route
      */
     public function put($pattern, $fn) {
         return $this->match('PUT', $pattern, $fn);
@@ -154,7 +154,7 @@ class Router {
      *
      * @param string $pattern A route pattern such as /about/system
      * @param mixed $fn The handling function to be executed
-     * @return \Neuron\Models\Route
+     * @return Route
      */
     public function options($pattern, $fn) {
         return $this->match('OPTIONS', $pattern, $fn);
@@ -313,7 +313,7 @@ class Router {
             if (!isset ($this->filters[$filter]))
                 throw new InvalidParameter ("Filter " . $filter . " is not registered in the router.");
 
-            $response = call_user_func_array ($this->filters[$filter], array ($this->request));
+            $response = call_user_func_array ($this->filters[$filter], array ($filter));
 
             // If output was not TRUE, handle the filter return value as output.
             if ($response !== true) {
