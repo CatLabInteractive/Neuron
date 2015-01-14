@@ -36,12 +36,21 @@ abstract class BaseMapper {
 	}
 
 	/**
+	 * Override this to set an alternative object collection.
+	 * @return array
+	 */
+	protected function getObjectCollection ()
+	{
+		return array ();
+	}
+
+	/**
 	 * @param $data
 	 * @return array|mixed[]
 	 */
 	protected function getObjectsFromData ($data)
 	{
-		$out = array ();
+		$out = $this->getObjectCollection ();
 		foreach ($data as $v)
 		{
 			$out[] = $this->getObjectFromData ($v);
