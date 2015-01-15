@@ -91,10 +91,12 @@ class Request
 		if (function_exists('getallheaders')) return getallheaders();
 
 		// getallheaders not available: manually extract 'm
-		$headers = array();
-		foreach ($_SERVER as $name => $value) {
-			if ((substr($name, 0, 5) == 'HTTP_') || ($name == 'CONTENT_TYPE') || ($name == 'CONTENT_LENGTH')) {
-				$headers[str_replace(array(' ', 'Http'), array('-', 'HTTP'), ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+		$headers = '';
+		foreach ($_SERVER as $name => $value)
+		{
+			if (substr($name, 0, 5) == 'HTTP_')
+			{
+				$headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
 			}
 		}
 		return $headers;
