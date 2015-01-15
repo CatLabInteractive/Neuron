@@ -98,6 +98,11 @@ class Request
 			{
 				$headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
 			}
+
+			else if (substr ($name, 0, 7) == 'REQUEST')
+			{
+				$headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', $name))))] = $value;
+			}
 		}
 		return $headers;
 	}
