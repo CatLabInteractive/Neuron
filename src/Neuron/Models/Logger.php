@@ -120,6 +120,11 @@ class Logger
 		return new Timer ($string);
 	}
 
+	public function start ($string, $replace = false, $color = null)
+	{
+		return $this->log ($string, $replace, $color);
+	}
+
 	public function replace ($string)
 	{
 		$this->log ($string, true);
