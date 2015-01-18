@@ -30,6 +30,11 @@ class Logger
 	private $temporary = array ();
 	private $temporarystart = array ();
 
+	public static function start ($string, $replace = false, $color = null)
+	{
+		return self::getInstance ()->log ($string, $replace, $color);
+	}
+
 	private function __construct ()
 	{
 		$this->start = microtime(true);
@@ -118,11 +123,6 @@ class Logger
 		$this->log[] = $log;
 
 		return new Timer ($string);
-	}
-
-	public function start ($string, $replace = false, $color = null)
-	{
-		return $this->log ($string, $replace, $color);
 	}
 
 	public function replace ($string)
