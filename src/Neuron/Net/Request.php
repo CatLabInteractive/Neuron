@@ -11,6 +11,7 @@ namespace Neuron\Net;
 
 use Exception;
 use Neuron\Core\Tools;
+use Neuron\Exceptions\InvalidParameter;
 use Neuron\Interfaces\Models\User;
 
 class Request
@@ -25,8 +26,8 @@ class Request
 	/** @var User $user */
 	private $user;
 
-	/** @var callable $usercallback */
-	private $usercallback;
+	/** @var callable[] $usercallback */
+	private $usercallback = array ();
 
 	private $usercallbackcalled = false;
 
@@ -399,25 +400,64 @@ class Request
 	 * To allow lazy loading of the user object, set a callback here.
 	 * Method will be called with request as parameter and only once a script.
 	 * @param callable $callback
+	 * @throws InvalidParameter
 	 * @return $this
 	 */
 	public function setUserCallback (callable $callback)
 	{
-		$this->usercallback = $callback;
+		//$this->usercallback = $callback;
+
+		if (count ($this->usercallback) > 0)
+			throw new InvalidParameter ("A usercallback was already set. Use addUserCallback to add multiple callbacks");
+
+		$this->addUserCallback ('default', $callback);
+
 		return $this;
 	}
 
 	/**
-	 * @return User
+	 * To allow for multiple authentication methods, extra user callbacks can be set.
+	 * Each callback must have a unique name. This name can be used in getUser to force
+	 * @param $name
+	 * @param callable $callback
+	 * @throws InvalidParameter
+	 * @return $this
 	 */
-	public function getUser()
+	public function addUserCallback ($name, callable $callback)
+	{
+		if (isset ($this->usercallback[$name]))
+			throw new InvalidParameter ("A usercallback with name " . $name . " is already set. Each callback must have a unique name.");
+
+		$this->usercallback[$name] = $callback;
+
+		return $this;
+	}
+
+	/**
+	 * @param string $callbackName To force a specific callback
+	 * @return \Neuron\Interfaces\Models\User
+	 */
+	public function getUser ($callbackName)
 	{
 		if (!isset ($this->user) && !$this->usercallbackcalled)
 		{
 			$this->usercallbackcalled = true;
 
-			if (isset ($this->usercallback)) {
-				$this->user = call_user_func ($this->usercallback, $this);
+			if (isset ($this->usercallback[$callbackName]))
+			{
+				$this->user = call_user_func ($this->usercallback[$callbackName], $this);
+			}
+
+			else {
+				// Loop trough all callbacks until we find one that returns something
+				$user = null;
+				foreach ($this->usercallback as $cb)
+				{
+					$user = call_user_func ($cb, $this);
+					if ($user)
+						break;
+				}
+				$this->user = $user;
 			}
 		}
 
