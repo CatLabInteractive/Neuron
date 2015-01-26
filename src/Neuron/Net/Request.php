@@ -437,7 +437,7 @@ class Request
 	 * @param string $callbackName To force a specific callback
 	 * @return \Neuron\Interfaces\Models\User
 	 */
-	public function getUser ($callbackName)
+	public function getUser ($callbackName = null)
 	{
 		if (!isset ($this->user) && !$this->usercallbackcalled)
 		{
