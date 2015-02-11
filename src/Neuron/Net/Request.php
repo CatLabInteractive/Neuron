@@ -366,10 +366,18 @@ class Request
 	 * @param $field
 	 * @param string $type
 	 * @param mixed $default
+	 * @param string $separator
 	 * @return mixed|null
 	 */
-	public function input ($field, $type = 'string', $default = null)
+	public function input ($field, $type = 'string', $default = null, $separator = ',')
 	{
+		// Check for array type
+		$array = false;
+		if (substr ($type, -2) === '[]') {
+			$type = substr ($type, 0, -2);
+			$array = true;
+		}
+
 		// Check post
 		$value = Tools::getInput ($this->getPost (), $field, $type);
 		if ($value === null)
@@ -382,6 +390,12 @@ class Request
 		{
 			return $default;
 		}
+
+		// Check if array?
+		if ($array) {
+			$value = explode ($separator, $value);
+		}
+
 		return $value;
 	}
 

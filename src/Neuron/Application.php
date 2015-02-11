@@ -29,6 +29,9 @@ class Application
 	/** @var SessionHandler $sessionHandler */
 	private $sessionHandler;
 
+	/** @var bool */
+	private $isFirstDispatch = true;
+
 	private static $in;
 
 	/**
@@ -133,6 +136,11 @@ class Application
 	 */
 	public function dispatch (Request $request = null)
 	{
+		if ($this->isFirstDispatch) {
+			$this->isFirstDispatch = false;
+			$this->trigger ('dispatch:first');
+		}
+
 		// Trigger initialize
 		$this->trigger ('dispatch:initialize');
 
