@@ -36,6 +36,10 @@ class Tools
 						return mktime (0, 0, 1, $time[1], $time[2], $time[0]);
 					break;
 
+					case 'base64':
+						return base64_decode ($dat[$key]);
+					break;
+
 					default:
 						return $dat[$key];
 					break;
@@ -98,6 +102,10 @@ class Tools
 			return self::isValidUTF8 ($value) && strlen ($value) == 32;
 		}
 
+		elseif ($type == 'base64') {
+			return self::isValidBase64 ($value);
+		}
+
 		elseif ($type == 'url')
 		{
 			$regex = '/((https?:\/\/|[w]{3})?[\w-]+(\.[\w-]+)+\.?(:\d+)?(\/\S*)?)/i';
@@ -149,6 +157,11 @@ class Tools
     {
         return (bool) preg_match('//u', $str);
     }
+
+	public static function isValidBase64 ($str)
+	{
+		return base64_encode(base64_decode($str, true)) === $str;
+	}
 
 	public static function putIntoText ($text, $ar = array(), $delimiter = '@@') 
 	{
