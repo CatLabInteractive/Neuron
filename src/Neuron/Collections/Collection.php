@@ -192,4 +192,9 @@ abstract class Collection
 		}
 		return null;
 	}
+
+	public function reverse ()
+	{
+		$this->data = array_reverse ($this->data);
+	}
 }
