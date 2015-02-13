@@ -306,6 +306,11 @@ class Router {
     {
         $function = $route->getFunction ();
 
+        // Check for additional parameters
+        foreach ($route->getParameters () as $v) {
+            $params[] = $v;
+        }
+
         // First handle the filters
         foreach ($route->getFilters () as $filter)
         {

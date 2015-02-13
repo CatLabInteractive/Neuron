@@ -25,6 +25,9 @@ class Route {
 	/** @var string[] */
 	private $filters = array ();
 
+	/** @var mixed[] */
+	private $extraParameters = array ();
+
 	public function __construct ($path)
 	{
 		$this->setRoute ($path);
@@ -97,6 +100,24 @@ class Route {
 			$this->filters[] = $objfilter;
 		}
 
+		return $this;
+	}
+
+	/**
+	 * @return \mixed[]
+	 */
+	public function getParameters ()
+	{
+		return $this->extraParameters;
+	}
+
+	/**
+	 * Add additional parameters that will be added to the controller call.
+	 * @return $this
+	 */
+	public function with () {
+
+		$this->extraParameters = func_get_args ();
 		return $this;
 	}
 
