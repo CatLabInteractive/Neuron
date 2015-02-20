@@ -26,7 +26,7 @@ abstract class Errorable
 
 	private function touchErrors ()
 	{
-		if (!isset ($this->error)) {
+		if (!isset ($this->errors)) {
 			$this->setErrors (new ErrorCollection ());
 		}
 	}
@@ -69,7 +69,7 @@ abstract class Errorable
 	}
 
 	/**
-	 * @return string[]
+	 * @return ErrorCollection
 	 */
 	public function getErrors ()
 	{
