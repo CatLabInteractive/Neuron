@@ -7,6 +7,7 @@
  */
 
 namespace Neuron\Models\Helpers;
+use Neuron\Collections\ErrorCollection;
 
 /**
  * Class Errorable
@@ -21,7 +22,14 @@ abstract class Errorable
 	/**
 	 * @var string array
 	 */
-	private $errors = array ();
+	private $errors = null;
+
+	private function touchErrors ()
+	{
+		if (!isset ($this->error)) {
+			$this->setErrors (new ErrorCollection ());
+		}
+	}
 
 	/**
 	 * @param string $error
@@ -33,9 +41,8 @@ abstract class Errorable
 
 	/**
 	 * Set the error array. By reference!
-	 * @param array $errors
 	 */
-	public function setErrors (array &$errors){
+	public function setErrors (ErrorCollection $errors){
 		$this->errors = $errors;
 	}
 
@@ -44,6 +51,7 @@ abstract class Errorable
 	 */
 	public function getError ()
 	{
+		$this->touchErrors ();
 		if (count ($this->errors) > 0)
 		{
 			return end ($this->errors);
@@ -56,6 +64,7 @@ abstract class Errorable
 	 */
 	public function addError ($error)
 	{
+		$this->touchErrors ();
 		$this->errors[] = $error;
 	}
 
@@ -64,6 +73,7 @@ abstract class Errorable
 	 */
 	public function getErrors ()
 	{
+		$this->touchErrors ();
 		return $this->errors;
 	}
 
