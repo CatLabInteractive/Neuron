@@ -12,4 +12,14 @@ namespace Neuron\Collections;
 class ErrorCollection
 	extends Collection {
 
+	public function getData ()
+	{
+		$out = array ();
+
+		foreach ($this as $v)
+			$out[] = (string) $v;
+
+		return $out;
+	}
+
 }
