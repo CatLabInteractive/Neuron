@@ -64,8 +64,11 @@ abstract class Errorable
 	 */
 	public function addError ($error)
 	{
+		$args = func_get_args ();
+		array_shift ($args);
+
 		$this->touchErrors ();
-		$this->errors[] = $error;
+		$this->errors[] = sprintf ($error, $args);
 	}
 
 	/**
