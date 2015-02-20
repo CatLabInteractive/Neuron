@@ -32,6 +32,14 @@ abstract class Errorable
 	}
 
 	/**
+	 * Set the error array. By reference!
+	 * @param array $errors
+	 */
+	public function setErrors (array &$errors){
+		$this->errors = $errors;
+	}
+
+	/**
 	 * @return string|null
 	 */
 	public function getError ()
