@@ -36,7 +36,7 @@ abstract class Errorable
 	 */
 	public function setError ($error)
 	{
-		$this->addError ($error);
+		call_user_func_array (array ($this, 'addError'), func_get_args ());
 	}
 
 	/**
@@ -68,7 +68,7 @@ abstract class Errorable
 		array_shift ($args);
 
 		$this->touchErrors ();
-		$this->errors[] = sprintf ($error, $args);
+		$this->errors[] = vsprintf ($error, $args);
 	}
 
 	/**
