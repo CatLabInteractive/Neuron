@@ -374,7 +374,8 @@ class Request
 		// Check for array type
 		$array = false;
 		if (substr ($type, -2) === '[]') {
-			$type = substr ($type, 0, -2);
+			$arrtype = substr ($type, 0, -2);
+			$type = 'string';
 			$array = true;
 		}
 
@@ -393,7 +394,14 @@ class Request
 
 		// Check if array?
 		if ($array) {
-			$value = explode ($separator, $value);
+			$values = explode ($separator, $value);
+
+			$value = array ();
+			foreach ($values as $v) {
+				if (Tools::checkInput ($v, $arrtype)) {
+					$value[] = $v;
+				}
+			}
 		}
 
 		return $value;
