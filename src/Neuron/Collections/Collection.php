@@ -197,4 +197,30 @@ abstract class Collection
 	{
 		$this->data = array_reverse ($this->data);
 	}
+
+	private function isAssociative () {
+		return array_values ($this->data) === $this->data;
+	}
+
+	/**
+	 * Remove an element from the collection.
+	 * @param $entry
+	 * @return bool
+	 */
+	public function remove ($entry) {
+		foreach ($this->data as $k => $v) {
+			if ($v === $entry) {
+				$associative = $this->isAssociative ();
+
+				unset ($this->data[$k]);
+				if ($associative) {
+					$this->data = array_values ($this->data);
+				}
+
+				return true;
+
+			}
+		}
+		return false;
+	}
 }
