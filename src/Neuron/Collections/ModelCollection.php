@@ -37,6 +37,14 @@ class ModelCollection
 			unset ($this->map[$model->getId ()]);
 	}
 
+	/**
+	 * Return all ids.
+	 * @return array
+	 */
+	public function getIds () {
+		return array_keys ($this->map);
+	}
+
 	public function getFromId ($id)
 	{
 		if (isset ($this->map[$id]))
