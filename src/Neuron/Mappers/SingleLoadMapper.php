@@ -6,13 +6,11 @@
  * Time: 14:19
  */
 
-namespace QuizWitz\Mappers;
-
+namespace Neuron\Mappers;
 
 use Neuron\Collections\Collection;
 use Neuron\Exceptions\InvalidParameter;
 use Neuron\Interfaces\Model;
-use Neuron\Mappers\BaseMapper;
 
 abstract class SingleLoadMapper
 	extends BaseMapper {
