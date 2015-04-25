@@ -12,7 +12,7 @@ use Neuron\Collections\Collection;
 use Neuron\Exceptions\InvalidParameter;
 use Neuron\Interfaces\Model;
 
-abstract class SingleLoadMapper
+abstract class CachedMapper
 	extends BaseMapper {
 
 	private $models = array ();
