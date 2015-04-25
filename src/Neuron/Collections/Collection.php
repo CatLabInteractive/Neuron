@@ -25,6 +25,18 @@ abstract class Collection
 		$this->data = $data;
 	}
 
+	public function push ($value) {
+		array_push ($this, $value);
+	}
+
+	public function pop () {
+		array_pop ($this);
+	}
+
+	public function shift ($value) {
+		array_shift ($this, $value);
+	}
+
 	 /**
 	  * (PHP 5 &gt;= 5.0.0)<br/>
 	  * Whether a offset exists
