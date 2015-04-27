@@ -11,8 +11,11 @@ namespace Neuron;
 
 class URLBuilder 
 {
-	public static function getURL ($module = '', $data = array (), $normalize = true)
+	public static function getURL ($module = '', $data = array (), $normalize = true, $appurl = null)
 	{
+		if (!isset ($appurl))
+			$appurl = Config::get ('app.url', '/');
+
 		if (substr ($module, 0, 1) === '/')
 		{
 			$module = substr ($module, 1);
@@ -28,9 +31,9 @@ class URLBuilder
 		if (!empty ($params))
 		{
 			if ($normalize)
-				$url = self::normalize (Config::get ('app.url', '/') . $module) . '?' . $params;
+				$url = self::normalize ($appurl . $module) . '?' . $params;
 			else
-				$url = Config::get ('app.url', '/') . $module . '?' . $params;
+				$url = $appurl . $module . '?' . $params;
 
 			return $url;
 		}
@@ -38,10 +41,31 @@ class URLBuilder
 		{
 			// Google likes these.
 			if ($normalize)
-				return self::normalize (Config::get ('app.url', '/') . $module);
+				return self::normalize ($appurl . $module);
 			else
-				return Config::get ('app.url', '/') . $module;
+				return $appurl . $module;
 		}
+	}
+
+	public static function getAbsoluteURL ($module = '', $data = array ()) {
+
+		if (self::isAbsolute (Config::get ('app.url'))) {
+			return self::getURL ($module, $data, true);
+		}
+		else {
+			return self::getURL ($module, $data, true, self::guessAbsoluteURL ());
+		}
+	}
+
+	private static function guessAbsoluteURL () {
+		return $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . '/';
+	}
+
+	private static function isAbsolute ($url) {
+		if (substr (strtolower ($url), 0, 4) == 'http') {
+			return true;
+		}
+		return false;
 	}
 
 	/**
