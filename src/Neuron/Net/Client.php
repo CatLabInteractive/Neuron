@@ -54,7 +54,7 @@ class Client {
 
 		$post = $request->getBody ();
 
-		curl_setopt($ch, CURLOPT_URL, $request->getUrl () . '?' . $request->getParameters ());
+		curl_setopt($ch, CURLOPT_URL, $request->getUrl () . '?' . http_build_query ($request->getParameters ()));
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
 		$headers = array ();
