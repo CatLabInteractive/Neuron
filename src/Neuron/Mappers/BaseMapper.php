@@ -9,6 +9,7 @@
 namespace Neuron\Mappers;
 
 
+use Neuron\Collections\Collection;
 use Neuron\Config;
 
 abstract class BaseMapper {
@@ -37,11 +38,12 @@ abstract class BaseMapper {
 
 	/**
 	 * Override this to set an alternative object collection.
-	 * @return array
+	 * @return Collection
 	 */
 	protected function getObjectCollection ()
 	{
-		return array ();
+		//return array ();
+		return new Collection ();
 	}
 
 	/**

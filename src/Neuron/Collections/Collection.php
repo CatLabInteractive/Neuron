@@ -13,7 +13,7 @@ use Countable;
 use Iterator;
 use Neuron\Models\Observable;
 
-abstract class Collection
+class Collection
 	extends Observable
 	implements Iterator, ArrayAccess, Countable
 {
