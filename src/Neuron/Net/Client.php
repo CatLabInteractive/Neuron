@@ -59,29 +59,33 @@ class Client {
 		curl_setopt($ch, CURLOPT_URL, $parsedUrl);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
-		$headers = array ();
-		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+		if ($request->getHeaders ()) {
+			$headers = $request->getHeaders ();
+			curl_setopt ($ch, CURLOPT_HTTPHEADER, $headers);
+		}
 
 		switch ($method)
 		{
 			case 'GET':
-			break;
+				break;
 
 			case 'POST':
 				curl_setopt($ch, CURLOPT_POST, 1);
-			break;
+				curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+				break;
 
 			case 'DELETE':
 				throw new NotImplemented ("Not implemented.");
-			break;
+				break;
 
 			case 'PUT':
 				curl_setopt($ch, CURLOPT_PUT, 1);
-			break;
-		}
 
-		curl_setopt($ch, CURLOPT_POST, 1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+				curl_setopt($ch, CURLOPT_POST, 1);
+				curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+				break;
+
+		}
 
 		$output = curl_exec($ch);
 
