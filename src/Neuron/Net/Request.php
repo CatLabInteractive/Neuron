@@ -58,26 +58,7 @@ class Request
 		$model->setStatus (http_response_code ());
 		$model->setUrl (self::getCurrentUri ());
 
-		$headers = $model->getHeaders ();
-		if (isset ($headers['Content-Type']))
-		{
-			switch (strtolower ($headers['Content-Type']))
-			{
-				case 'application/json':
-				case 'text/json':
-
-					$data = json_decode ($model->getBody (), true);
-
-					if (!$data) {
-						$model->setError ('JSON decode error: ' . json_last_error_msg ());
-					}
-					else {
-						$model->setData ($data);
-					}
-
-				break;
-			}
-		}
+		$model->parseData ();
 
 		return $model;
 	}

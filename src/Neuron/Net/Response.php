@@ -57,6 +57,17 @@ class Response
 		return $model;
 	}
 
+	public static function fromRaw ($body, $headers) {
+
+		$out = new self ();
+		$out->setBody ($body);
+		$out->setHeaders ($headers);
+		$out->parseData ();
+
+		return $out;
+
+	}
+
 	/**
 	 * Show the data in a html table.
 	 * @param $data

@@ -23,6 +23,45 @@ class Client {
 		return $in;
 	}
 
+	public static function http_parse_headers ($raw_headers) {
+		$headers = array();
+		$key = ''; // [+]
+
+		foreach(explode("\n", $raw_headers) as $i => $h)
+		{
+			$h = explode(':', $h, 2);
+
+			if (isset($h[1]))
+			{
+				if (!isset($headers[$h[0]]))
+					$headers[$h[0]] = trim($h[1]);
+				elseif (is_array($headers[$h[0]]))
+				{
+					// $tmp = array_merge($headers[$h[0]], array(trim($h[1]))); // [-]
+					// $headers[$h[0]] = $tmp; // [-]
+					$headers[$h[0]] = array_merge($headers[$h[0]], array(trim($h[1]))); // [+]
+				}
+				else
+				{
+					// $tmp = array_merge(array($headers[$h[0]]), array(trim($h[1]))); // [-]
+					// $headers[$h[0]] = $tmp; // [-]
+					$headers[$h[0]] = array_merge(array($headers[$h[0]]), array(trim($h[1]))); // [+]
+				}
+
+				$key = $h[0]; // [+]
+			}
+			else // [+]
+			{ // [+]
+				if (substr($h[0], 0, 1) == "\t") // [+]
+					$headers[$key] .= "\r\n\t".trim($h[0]); // [+]
+				elseif (!$key) // [+]
+					$headers[0] = trim($h[0]);trim($h[0]); // [+]
+			} // [+]
+		}
+
+		return $headers;
+	}
+
 	private function __construct ()
 	{
 
@@ -58,6 +97,7 @@ class Client {
 
 		curl_setopt($ch, CURLOPT_URL, $parsedUrl);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_HEADER, 1);
 
 		if ($request->getHeaders ()) {
 			$headers = $request->getHeaders ();
@@ -70,6 +110,8 @@ class Client {
 				break;
 
 			case 'POST':
+				curl_setopt($ch, CURLOPT_POST, 1);
+
 				curl_setopt($ch, CURLOPT_POST, 1);
 				curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
 				break;
@@ -90,8 +132,15 @@ class Client {
 		$output = curl_exec($ch);
 
 		// Response
-		$response = new Response ();
-		$response->setBody ($output);
+
+
+		$header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+		$header = substr($output, 0, $header_size);
+		$body = substr($output, $header_size);
+
+		$response = Response::fromRaw ($body, self::http_parse_headers ($header));
+		curl_close ($ch);
+
 		return $response;
 	}
 

@@ -30,7 +30,7 @@ abstract class Entity {
 
 	/** @var string $error */
 	private $error;
-	
+
 	/** @var integer $status */
 	private $status;
 
@@ -52,7 +52,7 @@ abstract class Entity {
 	{
 		// Check signature
 		$model = $this;
-		
+
 		$chk = self::CHECK_SIGNATURE;
 
 		if ($chk && !isset ($data['signature']))
@@ -90,13 +90,37 @@ abstract class Entity {
 		{
 			$model->setPost ($data['post']);
 		}
-		
+
 		if (isset ($data['status']))
 		{
 			$model->setStatus ($data['status']);
 		}
 
 		return $model;
+	}
+
+	protected function parseData () {
+
+		$headers = $this->getHeaders ();
+		if (isset ($headers['Content-Type']))
+		{
+			switch (strtolower ($headers['Content-Type']))
+			{
+				case 'application/json':
+				case 'text/json':
+
+					$data = json_decode ($this->getBody (), true);
+
+					if (!$data) {
+						$this->setError ('JSON decode error: ' . json_last_error_msg ());
+					}
+					else {
+						$this->setData ($data);
+					}
+
+					break;
+			}
+		}
 	}
 
 	/**
@@ -114,7 +138,7 @@ abstract class Entity {
 				$data['data'] = $this->getData ();
 			}
 		}
-		
+
 		$data['body'] = $this->getBody ();
 
 		$data['headers'] = $this->getHeaders ();
