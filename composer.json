@@ -16,7 +16,8 @@
 
     "require" : {
         "php": ">=5.5.0",
-        "ext-gettext" : "*"
+        "ext-gettext" : "*",
+        "nesbot/carbon": "~1.18"
     },
 
     "autoload": {

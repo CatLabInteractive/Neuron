@@ -7,6 +7,7 @@
 
 namespace Neuron\DB;
 
+use Carbon\Carbon;
 use Neuron\Exceptions\InvalidParameter;
 use Neuron\Models\Geo\Point;
 
@@ -295,8 +296,6 @@ class Query
 
 	public function getParsedQuery ()
 	{
-		$db = Database::getInstance ();
-
 		$keys = array ();
 		$values = array ();
 
@@ -306,12 +305,15 @@ class Query
 			if (!isset ($v[1]))
 			{
 				// Check for known "special types"
-				if ($v[0] instanceof Point)
-				{
+				if ($v[0] instanceof Point) {
 					$v[1] = self::PARAM_POINT;
 				}
-				else
-				{
+
+				else if ($v[0] instanceof Carbon) {
+					$v[1] = self::PARAM_DATE;
+				}
+
+				else {
 					$v[1] = self::PARAM_STR;
 				}
 			}
@@ -323,115 +325,20 @@ class Query
 			}
 
 			// Empty and should set NULL?
-			if ($v[2] && empty ($v[0]))
-			{
+			if ($v[2] && empty ($v[0])) {
 				$value = "NULL";
 			}
-			else
-			{
-				// Array?
-				if (is_array ($v[0]))
-				{
-					switch ($v[1])
-					{
-						case self::PARAM_NUMBER:
-							foreach ($v[0] as $kk => $vv)
-							{
-								if (!is_numeric ($vv))
-								{
-									throw new InvalidParameter ("Parameter " . $k . "[" . $kk . "] should be numeric in query " . $this->query);
-								}
-							}
-							$value = '(' . implode (',', $v[0]) . ')';
-						break;
-
-						case self::PARAM_DATE:
-
-							$tmp = array ();
-							foreach ($v[0] as $kk => $vv)
-							{
-								if (!is_numeric ($vv))
-								{
-									throw new InvalidParameter ("Parameter " . $k . "[" . $kk . "] should be a valid timestamp in query " . $this->query);
-								}
-								$tmp[] = "FROM_UNIXTIME(" . $vv . ")";
-							}
-							$value = '(' . implode (',', $tmp) . ')';
-
-						break;
-
-						case self::PARAM_POINT:
-							$tmp = array ();
-							foreach ($v[0] as $kk => $vv)
-							{
-								if (! ($vv instanceof Point))
-								{
-									throw new InvalidParameter ("Parameter " . $k . "[" . $kk . "] should be a valid \\Neuron\\Models\\Point " . $this->query);
-								}
-								$tmp[] = "POINT(" . $vv->getLongtitude() . "," . $vv->getLatitude() .")";
-							}
-							$value = '(' . implode (',', $tmp) . ')';
-						break;
-
-						case self::PARAM_STR:
-						default:
-							$tmp = array ();
-							foreach ($v[0] as $kk => $vv)
-							{
-								$tmp[] = "'" . $db->escape (strval ($vv)) . "'";
-							}
-							$value = '(' . implode (',', $tmp) . ')';
-						break;
-					}
-				}
-				else
-				{
-					switch ($v[1])
-					{
-						case self::PARAM_NUMBER:
-							if (!is_numeric ($v[0]))
-							{
-								throw new InvalidParameter ("Parameter " . $k . " should be numeric in query " . $this->query);
-							}
-							$value = $v[0];
-						break;
-
-						case self::PARAM_DATE:
-							if (!is_numeric ($v[0]))
-							{
-								throw new InvalidParameter ("Parameter " . $k . " should be a valid timestamp in query " . $this->query);
-							}
-							$value = "FROM_UNIXTIME(" . $v[0] . ")";
-						break;
-
-						case self::PARAM_POINT:
-							if (! ($v[0] instanceof Point))
-							{
-								throw new InvalidParameter ("Parameter " . $k . " should be a valid \\Neuron\\Models\\Point " . $this->query);
-							}
-							else
-							{
-								$value = "POINT(" . $v[0]->getLongtitude() . "," . $v[0]->getLatitude() .")";
-							}
-						break;
-
-						case self::PARAM_STR:
-						default:
-							$value = "'" . $db->escape (strval ($v[0])) . "'";
-						break;
-					}
-				}
+			else {
+				$value = $this->getValues ($k, $v);
 			}
 
 			$values[$k] = $value;
 
 			// Replace question marks or tokens?
-			if (is_string ($k))
-			{
+			if (is_string ($k)) {
 				$keys[] = '/:'.$k.'/';
 			}
-			else
-			{
+			else {
 				$keys[] = '/[?]/';
 			}
 		}
@@ -453,6 +360,65 @@ class Query
 		}
 
 		return $query;
+	}
+
+	private function getValue ($value, $type, $parameterName) {
+		$db = Database::getInstance ();
+
+		switch ($type)
+		{
+			case self::PARAM_NUMBER:
+				if (!is_numeric ($value)) {
+					throw new InvalidParameter ("Parameter " . $parameterName . " should be numeric in query " . $this->query);
+				}
+				return $value;
+			break;
+
+			case self::PARAM_DATE:
+
+				if ($value instanceof Carbon) {
+					return "'" . $value->toDateTimeString () . "'";
+				}
+
+				else if (is_numeric ($value)) {
+					return "FROM_UNIXTIME(" . $value . ")";
+				}
+				else {
+					throw new InvalidParameter ("Parameter " . $parameterName . " should be a valid timestamp in query " . $this->query);
+				}
+
+			break;
+
+			case self::PARAM_POINT:
+				if (! ($value instanceof Point))
+				{
+					throw new InvalidParameter ("Parameter " . $parameterName . " should be a valid \\Neuron\\Models\\Point " . $this->query);
+				}
+				return $value = "POINT(" . $value->getLongtitude() . "," . $value->getLatitude() .")";
+			break;
+
+			case self::PARAM_STR:
+			default:
+				$value = "'" . $db->escape (strval ($value)) . "'";
+				return $value;
+			break;
+		}
+	}
+
+	private function getValues ($k, $v) {
+
+		if (is_array ($v[0])) {
+			$tmp = array ();
+
+			foreach ($v[0] as $kk => $vv) {
+				$tmp[] = $this->getValue ($vv, $v[1], $k . '[' . $kk . ']');
+			}
+
+			return '(' . implode (',', $tmp) . ')';
+		}
+		else {
+			return $this->getValue ($v[0], $v[1], $k);
+		}
 	}
 
 	public function execute ()
