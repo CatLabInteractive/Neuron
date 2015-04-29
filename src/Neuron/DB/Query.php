@@ -7,7 +7,7 @@
 
 namespace Neuron\DB;
 
-use Carbon\Carbon;
+use DateTime;
 use Neuron\Exceptions\InvalidParameter;
 use Neuron\Models\Geo\Point;
 
@@ -309,7 +309,7 @@ class Query
 					$v[1] = self::PARAM_POINT;
 				}
 
-				else if ($v[0] instanceof Carbon) {
+				else if ($v[0] instanceof DateTime) {
 					$v[1] = self::PARAM_DATE;
 				}
 
@@ -376,8 +376,8 @@ class Query
 
 			case self::PARAM_DATE:
 
-				if ($value instanceof Carbon) {
-					return "'" . $value->toDateTimeString () . "'";
+				if ($value instanceof DateTime) {
+					return "'" . $value->format ('Y-m-d H:i:s') . "'";
 				}
 
 				else if (is_numeric ($value)) {
