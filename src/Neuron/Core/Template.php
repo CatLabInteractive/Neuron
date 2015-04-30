@@ -422,4 +422,8 @@ class Template
 	{
 		return \Neuron\Tools\Text::getInstance ()->getText ($message1, $message2, $n);
 	}
+
+	public function __toString () {
+		return $this->parse ();
+	}
 }
