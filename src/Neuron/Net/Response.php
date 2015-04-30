@@ -114,7 +114,7 @@ class Response
 	{
 		$in = new self ();
 		$in->setData ($data);
-		$in->setOutput (new XML ());
+		$in->setOutput (new XML ($root, $version, $parameters, $itemName));
 		return $in;
 	}
 
