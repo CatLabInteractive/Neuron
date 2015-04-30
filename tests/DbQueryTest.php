@@ -12,6 +12,7 @@ class DbQueryTest
 {
 	public function testQueryBuilder ()
 	{
+
 		// Regular query.
 		$query = new Query ("SELECT * FROM `table` WHERE m_date = ? AND m_id = ? AND m_string = ?");
 		$query->bindValue (1, gmmktime (0, 0, 0, 9, 16, 2013), Query::PARAM_DATE);
