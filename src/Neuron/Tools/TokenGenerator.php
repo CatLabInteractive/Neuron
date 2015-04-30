@@ -23,4 +23,16 @@ class TokenGenerator {
 		return $out;
 	}
 
+	public static function getSimplifiedToken ($length)
+	{
+		$range = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+		$out = '';
+		for ($i = 0; $i < $length; $i ++)
+		{
+			$out .= substr ($range, mt_rand (0, strlen ($range)), 1);
+		}
+		return $out;
+	}
+
 }
