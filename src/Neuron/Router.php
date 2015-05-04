@@ -245,6 +245,10 @@ class Router {
             // we have a match!
             if ($params = $this->request->parseRoute ($route)) {
 
+	            if (!is_array ($params)) {
+		            $params = array ();
+	            }
+
                 // call the handling function with the URL parameters
                 $this->handleMatch ($route, $params);
                 //call_user_func_array($route['fn'], $params);

@@ -517,7 +517,12 @@ class Request
 
 			}, $matches, array_keys($matches));
 
-			return $params;
+			if (empty ($params)) {
+				return true;
+			}
+			else {
+				return $params;
+			}
 		}
 
 		return false;
