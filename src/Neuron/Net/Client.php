@@ -87,6 +87,10 @@ class Client {
 		return $this->api ($request, 'DELETE');
 	}
 
+	public function process (Request $request) {
+		return $this->api ($request, $request->getMethod ());
+	}
+
 	private function api (Request $request, $method)
 	{
 		$ch = curl_init();

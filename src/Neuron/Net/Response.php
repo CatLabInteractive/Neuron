@@ -161,6 +161,24 @@ class Response
 		return $in;
 	}
 
+	/**
+	 * Proxy a request.
+	 * @param string|Request $request Url or Request object.
+	 * @return Response
+	 */
+	public static function proxy ($request) {
+
+		if (!$request instanceof Request) {
+			$url = $request;
+
+			$request = new Request ();
+			$request->setUrl ($url);
+			$request->setMethod (Request::METHOD_GET);
+		}
+
+		return Client::getInstance ()->process ($request);
+	}
+
 	private $output;
 
 	/**
