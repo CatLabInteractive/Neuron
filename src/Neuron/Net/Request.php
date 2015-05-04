@@ -170,6 +170,28 @@ class Request
 		return $model;
 	}
 
+	public static function fromURL ($url) {
+
+		$data = parse_url ($url);
+
+		$parameters = array ();
+
+		if (!empty ($data['query']))
+			parse_str ($data['query'], $parameters);
+
+		$request = new self ();
+		$request->setUrl (
+			$data['scheme'] . '://' .
+			$data['host'] . (isset ($data['port']) ? ':' . $data['port'] : '') .
+			'/' . $data['path']
+		);
+
+		$request->setParameters ($parameters);
+
+		return $request;
+
+	}
+
 	private $method = 'GET';
 	private $url;
 	private $parameters;
