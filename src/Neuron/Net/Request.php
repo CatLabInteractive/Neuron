@@ -9,6 +9,7 @@
 namespace Neuron\Net;
 
 
+use DateTime;
 use Exception;
 use Neuron\Core\Tools;
 use Neuron\Exceptions\InvalidParameter;
@@ -539,5 +540,40 @@ class Request
 		}
 
 		return false;
+	}
+
+	public function setETag ($tag) {
+		$this->setHeader ('etag', $tag);
+	}
+
+	public function setNoCache () {
+		$this->setHeader ('Cache-Control', 'private, max-age=0, no-cache');
+		$this->setHeader ('Pragma', 'no-cache');
+
+		$date = time ();
+		$date -= (60 * 60 * 24 * 7);
+
+		$this->setHeader ('Expires', date ('c', $date));
+	}
+
+	public function setCache ($maxAge = 86400, $privacy = 'public') {
+
+		switch ($privacy) {
+			case 'public':
+			case 'private':
+			break;
+
+			default:
+				$privacy = 'private';
+			break;
+		}
+
+		$this->setHeader ('Cache-Control', $privacy);
+
+		$date = time ();
+		$date += $maxAge;
+
+		$this->setHeader ('Expires', date ('c', $date));
+
 	}
 } 
