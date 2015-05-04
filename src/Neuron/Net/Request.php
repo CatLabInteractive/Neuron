@@ -13,6 +13,7 @@ use Exception;
 use Neuron\Core\Tools;
 use Neuron\Exceptions\InvalidParameter;
 use Neuron\Interfaces\Models\User;
+use Neuron\Models\Router\Route;
 
 class Request
 	extends Entity {
@@ -487,5 +488,38 @@ class Request
 		}
 
 		return $this->user;
+	}
+
+	/**
+	 * Evaluate a route and return the parameters.
+	 * @param Route $route
+	 * @return array|bool
+	 */
+	public function parseRoute (Route $route) {
+
+		if (preg_match_all('#^' . $route->getRoute () . '$#', $this->getUrl (), $matches, PREG_OFFSET_CAPTURE)) {
+
+			// Rework matches to only contain the matches, not the orig string
+			$matches = array_slice($matches, 1);
+
+			// Extract the matched URL parameters (and only the parameters)
+			$params = array_map(function($match, $index) use ($matches) {
+
+				// We have a following parameter: take the substring from the current param position until the next one's position (thank you PREG_OFFSET_CAPTURE)
+				if (isset($matches[$index+1]) && isset($matches[$index+1][0]) && is_array($matches[$index+1][0])) {
+					return trim(substr($match[0][0], 0, $matches[$index+1][0][1] - $match[0][1]), '/');
+				}
+
+				// We have no following paramete: return the whole lot
+				else {
+					return (isset($match[0][0]) ? trim($match[0][0], '/') : null);
+				}
+
+			}, $matches, array_keys($matches));
+
+			return $params;
+		}
+
+		return false;
 	}
 } 

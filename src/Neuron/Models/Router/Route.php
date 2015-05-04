@@ -30,6 +30,10 @@ class Route {
 
 	public function __construct ($path)
 	{
+		// Regex are too pro, bro! Give us some simple {param} and {param?} parameters.
+		$path = preg_replace ('/\/\{\w+\\?}/', '(/\w+)?', $path);
+		$path = preg_replace ('/\/\{\w+\}/', '(/\w+)', $path);
+
 		$this->setRoute ($path);
 	}
 
