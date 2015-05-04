@@ -97,7 +97,19 @@ class Client {
 
 		$post = $request->getBody ();
 
-		$parsedUrl = $request->getUrl () . '?' . http_build_query ($request->getParameters ());
+		$parsedUrl = $request->getUrl ();
+
+		if ($request->getParameters ()) {
+
+			if (strpos ($parsedUrl, '?')) {
+				$parsedUrl .= '&';
+			}
+			else {
+				$parsedUrl .= '?';
+			}
+
+			$parsedUrl .= http_build_query ($request->getParameters ();
+		};
 
 		curl_setopt($ch, CURLOPT_URL, $parsedUrl);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
