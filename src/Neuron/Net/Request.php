@@ -171,7 +171,13 @@ class Request
 		return $model;
 	}
 
-	public static function fromURL ($url) {
+	/**
+	 * Return a request based on a simple url.
+	 * @param string $url
+	 * @param string $stripHost
+	 * @return Request
+	 */
+	public static function fromURL ($url, $stripHost) {
 
 		$data = parse_url ($url);
 
@@ -181,11 +187,18 @@ class Request
 			parse_str ($data['query'], $parameters);
 
 		$request = new self ();
-		$request->setUrl (
-			$data['scheme'] . '://' .
-			$data['host'] . (isset ($data['port']) ? ':' . $data['port'] : '') .
-			'/' . $data['path']
-		);
+
+		if ($stripHost) {
+			$request->setUrl ($data['path']);
+		}
+
+		else {
+			$request->setUrl (
+				$data['scheme'] . '://' .
+				$data['host'] . (isset ($data['port']) ? ':' . $data['port'] : '') .
+				$data['path']
+			);
+		}
 
 		$request->setParameters ($parameters);
 
