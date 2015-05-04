@@ -108,7 +108,7 @@ class Client {
 				$parsedUrl .= '?';
 			}
 
-			$parsedUrl .= http_build_query ($request->getParameters ();
+			$parsedUrl .= http_build_query ($request->getParameters ());
 		};
 
 		curl_setopt($ch, CURLOPT_URL, $parsedUrl);
