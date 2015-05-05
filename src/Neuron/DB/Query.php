@@ -11,7 +11,7 @@ use DateTime;
 use Neuron\Exceptions\InvalidParameter;
 use Neuron\Models\Geo\Point;
 
-class Query 
+class Query
 {
 	const PARAM_NUMBER = 1;
 	const PARAM_DATE = 2;
@@ -33,7 +33,7 @@ class Query
 	public static function insert ($table, array $set)
 	{
 		$query = 'INSERT INTO `' . $table . '` SET ';
-		$values = array ();		
+		$values = array ();
 		foreach ($set as $k => $v)
 		{
 			$query .= $k . ' = ?, ';
@@ -274,8 +274,8 @@ class Query
 	}
 
 	/**
-	* And construct.
-	*/
+	 * And construct.
+	 */
 	public function __construct ($query)
 	{
 		$this->query = $query;
@@ -371,8 +371,8 @@ class Query
 				if (!is_numeric ($value)) {
 					throw new InvalidParameter ("Parameter " . $parameterName . " should be numeric in query " . $this->query);
 				}
-				return $value;
-			break;
+				return (string)str_replace (',', '.', $value);
+				break;
 
 			case self::PARAM_DATE:
 
@@ -387,7 +387,7 @@ class Query
 					throw new InvalidParameter ("Parameter " . $parameterName . " should be a valid timestamp in query " . $this->query);
 				}
 
-			break;
+				break;
 
 			case self::PARAM_POINT:
 				if (! ($value instanceof Point))
@@ -395,13 +395,18 @@ class Query
 					throw new InvalidParameter ("Parameter " . $parameterName . " should be a valid \\Neuron\\Models\\Point " . $this->query);
 				}
 				return $value = "POINT(" . $value->getLongtitude() . "," . $value->getLatitude() .")";
-			break;
+				break;
 
 			case self::PARAM_STR:
 			default:
+
+				if (is_numeric ($value)) {
+					$value = (string)str_replace (',', '.', $value);
+				}
+
 				$value = "'" . $db->escape (strval ($value)) . "'";
 				return $value;
-			break;
+				break;
 		}
 	}
 
@@ -428,4 +433,3 @@ class Query
 		return $db->query ($query);
 	}
 }
-?>
