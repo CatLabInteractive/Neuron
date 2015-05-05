@@ -1,12 +1,8 @@
 <?php
 namespace Neuron\Interfaces\Models;
 
-interface User {
-
-	/**
-	 * @return int
-	 */
-	public function getId ();
+interface User
+	extends \Neuron\Interfaces\Model {
 
 	/**
 	 * @return string
