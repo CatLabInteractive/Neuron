@@ -3,6 +3,7 @@
 
 namespace Neuron\Core;
 
+use DateTime;
 use Neuron\Core\Tools as NeuronCoreTools;
 use Exception;
 use Neuron\Core\Text;
@@ -34,6 +35,10 @@ class Tools
 					case 'date':
 						$time = explode ('-', $dat[$key]);
 						return mktime (0, 0, 1, $time[1], $time[2], $time[0]);
+					break;
+
+					case 'datetime':
+						return new DateTime ($dat[$key]);
 					break;
 
 					case 'base64':
@@ -95,6 +100,11 @@ class Tools
 		{
 			$time = explode ('-', $value);
 			return self::isValidUTF8 ($value) && (count ($time) == 3);
+		}
+
+		elseif ($type == 'datetime') {
+			$regex  = '/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/';
+			return (bool)preg_match ($regex, $value);
 		}
 		
 		elseif ($type == 'md5')

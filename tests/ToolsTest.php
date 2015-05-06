@@ -97,4 +97,9 @@ class ToolsTest
 		$this->assertFalse (Tools::checkInput ('23,5', 'int'));
 
 	}
+
+	public function testDateInput () {
+		$this->assertTrue (Tools::checkInput ('2015-06-01T10:00', 'datetime'));
+		$this->assertFalse (Tools::checkInput ('06-01-2015T10:00', 'datetime'));
+	}
 }
