@@ -11,6 +11,13 @@ namespace Neuron;
 
 class URLBuilder 
 {
+	/**
+	 * @param string $module Path name
+	 * @param array $data Query string
+	 * @param bool $normalize Should the url be normalized?
+	 * @param null $appurl Override the app url
+	 * @return string
+	 */
 	public static function getURL ($module = '', $data = array (), $normalize = true, $appurl = null)
 	{
 		if (!isset ($appurl))

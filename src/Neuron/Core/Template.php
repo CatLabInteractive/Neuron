@@ -423,6 +423,17 @@ class Template
 		return \Neuron\Tools\Text::getInstance ()->getText ($message1, $message2, $n);
 	}
 
+	/**
+	 * @param $path
+	 * @param array $params
+	 * @param bool $normalize
+	 * @param null $appurl
+	 * @return string
+	 */
+	private function getURL ($path, array $params = null, $normalize = true, $appurl = null) {
+		return \Neuron\URLBuilder::getURL ($path, $params, $normalize, $appurl);
+	}
+
 	public function __toString () {
 		return $this->parse ();
 	}
