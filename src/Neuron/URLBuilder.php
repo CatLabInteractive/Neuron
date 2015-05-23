@@ -29,9 +29,10 @@ class URLBuilder
 		}
 
 		$params = '';
-		foreach ($data as $k => $v)
-		{
-			$params .= urlencode ($k) . '=' . urlencode ($v) . '&';
+		if (isset ($data)) {
+			foreach ($data as $k => $v) {
+				$params .= urlencode ($k) . '=' . urlencode ($v) . '&';
+			}
 		}
 		$params = substr ($params, 0, -1);
 
