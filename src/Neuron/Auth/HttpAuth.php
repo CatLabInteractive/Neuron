@@ -43,14 +43,14 @@ class HttpAuth {
 	{
 		foreach ($this->users as $user)
 		{
-			if ($user[0] === $username) {
+			if ($user['username'] === $username) {
 				return $user;
 			}
 		}
 		return null;
 	}
 
-	public function check (\Neuron\Net\Request $request)
+	public function check (\Neuron\Models\Router\Filter $filter)
 	{
 		$error = new \Neuron\Net\Response ();
 		$error->setBody ('Authorization not accepted');
@@ -69,7 +69,7 @@ class HttpAuth {
 			}
 
 			else {
-				if ($_SERVER['PHP_AUTH_PW'] === $user[1]) {
+				if ($_SERVER['PHP_AUTH_PW'] === $user['password']) {
 					return $error;
 				}
 				return true;
