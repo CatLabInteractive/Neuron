@@ -1,4 +1,7 @@
 <?php
+
+namespace Neuron\Auth;
+
 class HttpAuth {
 
 	/** @var array[] */
