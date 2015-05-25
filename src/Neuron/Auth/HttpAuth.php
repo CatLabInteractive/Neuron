@@ -69,7 +69,7 @@ class HttpAuth {
 			}
 
 			else {
-				if ($_SERVER['PHP_AUTH_PW'] === $user['password']) {
+				if ($_SERVER['PHP_AUTH_PW'] !== $user['password']) {
 					return $error;
 				}
 				return true;
