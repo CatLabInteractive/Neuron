@@ -301,13 +301,18 @@ class Template
 
 	private function processRenderQueue ($contents = array ())
 	{
-		if (isset ($this->layoutRender))
-		{
+		if (isset ($this->layoutRender)) {
 			$template = new self ();
 
-			foreach ($contents as $k => $v)
-			{
+			// Set the variables that have been set here.
+			foreach ($this->values as $k => $v) {
 				$template->set ($k, $v);
+			}
+
+			// And now set the content blocks.
+			// This might overwrite other sets.
+			foreach ($contents as $k => $v) {
+				$template->set ($k, $v, true);
 			}
 
 			return $template->parse ($this->layoutRender);
