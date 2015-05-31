@@ -81,15 +81,15 @@ class Collection
 		 }
 		 else
 		 {
-		 	if (isset ($this->data[$offset]))
-		    {
-			    $this->trigger ('add', $value, $offset);
-		    }
-			else {
-				$this->trigger ('set', $value, $offset);
-			}
-
 			$this->data[$offset] = $value;
+
+			 if (isset ($this->data[$offset]))
+			 {
+				 $this->trigger ('add', $value, $offset);
+			 }
+			 else {
+				 $this->trigger ('set', $value, $offset);
+			 }
 		 }
 	 }
 
