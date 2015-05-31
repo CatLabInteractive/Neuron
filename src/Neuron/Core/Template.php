@@ -132,6 +132,7 @@ class Template
 	/**
 	 * @param $sTextSection
 	 * @param null $sTextFile
+	 * @return $this
 	 */
 	private function setTextSection ($sTextSection, $sTextFile = null)
 	{
@@ -141,19 +142,31 @@ class Template
 		{
 			$this->sTextFile = $sTextFile;
 		}
+
+		return $this;
 	}
 
 	/**
 	 * @param $sTextFile
+	 * @return $this
 	 */
 	private function setTextFile ($sTextFile)
 	{
 		$this->sTextFile = $sTextFile;
+		return $this;
 	}
 
+	/**
+	 * @param $var
+	 * @param $value
+	 * @param bool $overwrite
+	 * @param bool $first
+	 * @return $this
+	 */
 	public function set ($var, $value, $overwrite = false, $first = false)
 	{
 		$this->setVariable ($var, $value, $overwrite, $first);
+		return $this;
 	}
 
 	/**
