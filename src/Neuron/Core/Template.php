@@ -42,9 +42,13 @@ class Template
 	 * Create a template.
 	 * @param $template
 	 */
-	public function __construct ($template = null)
+	public function __construct ($template = null, $values = array ())
 	{
 		$this->template = $template;
+
+		foreach ($values as $name => $value) {
+			$this->set ($name, $value);
+		}
 	}
 
 	/**
