@@ -227,4 +227,26 @@ class Collection
 		}
 		return false;
 	}
+
+	/**
+	 * Return the very first element.
+	 */
+	public function first ()
+	{
+		if (!is_array($this->data)) return $this->data;
+		if (!count($this->data)) return null;
+		reset($this->data);
+		return $this->data[key($this->data)];
+	}
+
+	/**
+	 * Return the very last element.
+	 */
+	public function last ()
+	{
+		if (!is_array($this->data)) return $this->data;
+		if (!count($this->data)) return null;
+		end($this->data);
+		return $this->data[key($this->data)];
+	}
 }
