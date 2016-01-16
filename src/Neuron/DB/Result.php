@@ -1,13 +1,15 @@
 <?php
 
-
 namespace Neuron\DB;
 
 use Iterator;
 use ArrayAccess;
 use Countable;
 
-
+/**
+ * Class Result
+ * @package Neuron\DB
+ */
 class Result implements Iterator, ArrayAccess, Countable
 {
 	private $result;

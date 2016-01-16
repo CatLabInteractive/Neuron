@@ -1,9 +1,4 @@
 <?php
-/**
- * A little helper class for mysql query
- *
- * @package Neuron\DB\Query
- */
 
 namespace Neuron\DB;
 
@@ -11,6 +6,10 @@ use DateTime;
 use Neuron\Exceptions\InvalidParameter;
 use Neuron\Models\Geo\Point;
 
+/**
+ * Class Query
+ * @package Neuron\DB
+ */
 class Query
 {
 	const PARAM_NUMBER = 1;
@@ -18,6 +17,7 @@ class Query
 	const PARAM_STR = 3;
 	const PARAM_STRING = 3;
 	const PARAM_NULL = 4;
+    const PARAM_UNKNOWN = 5;
 
 	const PARAM_POINT = 10;
 
@@ -26,66 +26,62 @@ class Query
 
 	/**
 	 * Generate an insert query
-	 * @param $table: table to insert data to
-	 * @param $set: a 2 dimensional array with syntax: { column_name : [ value, type, nullOnEmpty ]}
+	 * @param string $table: table to insert data to
+	 * @param mixed[] $set: a 2 dimensional array with syntax: { column_name : [ value, type, nullOnEmpty ]}
 	 * @return Query
 	 */
-	public static function insert ($table, array $set)
+	public static function insert($table, array $set)
 	{
-		$query = 'INSERT INTO `' . $table . '` SET ';
+		$query = 'INSERT INTO ' . self::escapeTableName($table) . ' SET ';
 		$values = array ();
-		foreach ($set as $k => $v)
-		{
+		foreach ($set as $k => $v) {
 			$query .= $k . ' = ?, ';
 
 			// No array? Then it's a simple string.
-			if (is_array ($v))
-			{
+			if (is_array ($v)) {
 				$values[] = $v;
-			}
-			else
-			{
-				$values[] = array ($v);
+			} else {
+				$values[] = array($v);
 			}
 		}
 
-		$query = substr ($query, 0, -2);
+		$query = substr($query, 0, -2);
 
-		$query = new self ($query);
-		$query->bindValues ($values);
+		$query = new self($query);
+		$query->bindValues($values);
 
 		return $query;
 	}
 
 	/**
 	 * Generate an replace query
-	 * @param $table: table to insert data to
-	 * @param $set: a 2 dimensional array with syntax: { column_name : [ value, type, nullOnEmpty ]}
+	 * @param string $table: table to insert data to
+	 * @param mixed[] $set: a 2 dimensional array with syntax: { column_name : [ value, type, nullOnEmpty ]}
 	 * @return Query
 	 */
-	public static function replace ($table, array $set)
+	public static function replace($table, array $set)
 	{
-		$query = 'REPLACE INTO `' . $table . '` SET ';
+		$query = 'REPLACE INTO ' . self::escapeTableName($table) . ' SET ';
 		$values = array ();
 		foreach ($set as $k => $v)
 		{
 			$query .= $k . ' = ?, ';
 
 			// No array? Then it's a simple string.
-			if (is_array ($v))
+			if (is_array($v))
 			{
 				$values[] = $v;
 			}
 			else
 			{
-				$values[] = array ($v);
+				$values[] = array($v);
 			}
 		}
 
-		$query = substr ($query, 0, -2);
+		$query = substr($query, 0, -2);
 
-		$query = new self ($query);
-		$query->bindValues ($values);
+		$query = new self($query);
+		$query->bindValues($values);
 
 		return $query;
 	}
@@ -98,105 +94,86 @@ class Query
 	 * nullOnEmpty may be omitted.
 	 * @return Query
 	 */
-	public static function update ($table, array $set, array $where)
+	public static function update($table, array $set, array $where)
 	{
-		$query = 'UPDATE `' . $table . '` SET ';
-		$values = array ();
-		foreach ($set as $k => $v)
-		{
+		$query = 'UPDATE ' . self::escapeTableName($table) . ' SET ';
+		$values = array();
+		foreach ($set as $k => $v) {
 			$query .= $k . ' = ?, ';
 
 			// No array? Then it's a simple string.
-			if (is_array ($v))
-			{
+			if (is_array($v)) {
 				$values[] = $v;
-			}
-			else
-			{
-				$values[] = array ($v);
+			} else {
+				$values[] = array($v);
 			}
 		}
 
-		$query = substr ($query, 0, -2) . ' ';
-		$query .= self::processWhere ($where, $values);
+		$query = substr($query, 0, -2) . ' ';
+		$query .= self::processWhere($where, $values);
 
-		$query = new self ($query);
-		$query->bindValues ($values);
+		$query = new self($query);
+		$query->bindValues($values);
 
 		return $query;
 	}
 
-	private static function processWhere (array $where, &$values)
+    /**
+     * @param mixed[] $where
+     * @param mixed[] $values
+     * @return string
+     */
+	private static function processWhere(array $where, &$values)
 	{
 		$query = '';
 
-		if (count ($where) > 0)
-		{
+		if (count($where) > 0) {
 			$query .= 'WHERE ';
-			foreach ($where as $k => $v)
-			{
+			foreach ($where as $k => $v) {
 				// No array? Then it's a simple string.
-				if (is_array ($v))
-				{
+				if (is_array($v)) {
 					$tmp = $v;
-				}
-				else
-				{
-					$tmp = array ($v, self::PARAM_STR);
+				} else {
+					$tmp = array($v, self::PARAM_UNKNOWN);
 				}
 
-				if (!is_array ($tmp[0]) && substr ($tmp[0], 0, 1) == '!')
-				{
+                // Parse comparators
+				if (!is_array($tmp[0]) && substr($tmp[0], 0, 1) === '!') {
 					$query .= $k . ' != ? AND ';
-					$tmp[0] = substr ($tmp[0], 1);
-				}
-
-				else if (isset ($tmp[2]) && strtoupper ($tmp[2]) == 'LIKE')
-				{
+					$tmp[0] = substr($tmp[0], 1);
+				} elseif (isset($tmp[2]) && strtoupper($tmp[2]) === 'LIKE') {
 					$query .= $k . ' LIKE ? AND ';
-					$tmp = array ($tmp[0], $tmp[1]);
-				}
-
-				else if (isset ($tmp[2]) && strtoupper ($tmp[2]) == 'NOT')
-				{
+					$tmp = array($tmp[0], $tmp[1]);
+				} elseif (isset ($tmp[2]) && strtoupper($tmp[2]) === 'NOT') {
 					$query .= $k . ' != ? AND ';
-					$tmp = array ($tmp[0], $tmp[1]);
-				}
-
-				else if (isset ($tmp[2])
+					$tmp = array($tmp[0], $tmp[1]);
+				} elseif (
+                    isset ($tmp[2])
 					&& (
-						strtoupper ($tmp[2]) == '>'
-						|| strtoupper ($tmp[2]) == '<'
-						|| strtoupper ($tmp[2]) == '>='
-						|| strtoupper ($tmp[2]) == '<='
-						|| strtoupper ($tmp[2]) == '!='
+						strtoupper ($tmp[2]) === '>'
+						|| strtoupper ($tmp[2]) === '<'
+						|| strtoupper ($tmp[2]) === '>='
+						|| strtoupper ($tmp[2]) === '<='
+						|| strtoupper ($tmp[2]) === '!='
 					)
-				)
-				{
+				) {
+					$query .= $k . ' ' . $tmp[2] . ' ? AND ';
+					$tmp = array($tmp[0], $tmp[1]);
+				} elseif (isset($tmp[2]) && strtoupper($tmp[2]) == 'IN') {
 					$query .= $k . ' ' . $tmp[2] . ' ? AND ';
 					$tmp = array ($tmp[0], $tmp[1]);
-				}
-
-				else if (isset ($tmp[2]) && strtoupper ($tmp[2]) == 'IN')
-				{
-					$query .= $k . ' ' . $tmp[2] . ' ? AND ';
-					$tmp = array ($tmp[0], $tmp[1]);
-				}
-
-				else if (is_array ($tmp[0]))
-				{
+				} elseif (is_array($tmp[0])) {
 					$query .= $k . ' IN ? AND ';
-				}
-
-				else
-				{
+				} elseif ($tmp[0] === null) {
+                    $query .= $k . ' IS NULL AND ';
+                } else {
 					$query .= $k . ' = ? AND ';
 				}
 
 				$values[] = $tmp;
 			}
 
-			$query = substr ($query, 0, -5);
+			$query = substr($query, 0, -5);
 		}
 
 		return $query;
@@ -211,46 +188,44 @@ class Query
 	 * @param null $limit
 	 * @return Query
 	 */
-	public static function select ($table, array $data = array (), array $where = array (), $order = array (), $limit = null)
-	{
+	public static function select (
+        $table,
+        array $data = array(),
+        array $where = array(),
+        $order = array(),
+        $limit = null
+    ) {
 		$query = 'SELECT ';
 		$values = array ();
 
-		if (count ($data) > 0)
-		{
-			foreach ($data as $v)
-			{
+		if (count ($data) > 0) {
+			foreach ($data as $v) {
 				$query .= $v . ', ';
 			}
 			$query = substr ($query, 0, -2) . ' ';
-		}
-		else
-		{
+		} else {
 			$query .= '* ';
 		}
 
-		$query .= 'FROM `' . $table . '` ';
+		$query .= 'FROM ' . self::escapeTableName($table) . ' ';
 		$query .= self::processWhere ($where, $values);
 
 		// Order
-		if (count ($order) > 0)
-		{
+		if (count ($order) > 0) {
 			$query .= " ORDER BY ";
-			foreach ($order as $v)
-			{
+			foreach ($order as $v) {
 				$query .= $v . ", ";
 			}
 			$query = substr ($query, 0, -2);
 		}
 
 		// Limit
-		if ($limit)
-		{
+		if ($limit) {
 			$query .= " LIMIT " . $limit;
 		}
 
-		$query = new self ($query);
-		$query->bindValues ($values);
+		$query = new self($query);
+		$query->bindValues($values);
 
 		return $query;
 	}
@@ -260,15 +235,15 @@ class Query
 	 * @param array $where
 	 * @return Query|string
 	 */
-	public static function delete ($table, array $where)
+	public static function delete($table, array $where)
 	{
-		$query = 'DELETE FROM `' . $table . '`';
+		$query = 'DELETE FROM ' . self::escapeTableName($table) . '';
 
-		$values = array ();
-		$query .= self::processWhere ($where, $values);
+		$values = array();
+		$query .= self::processWhere($where, $values);
 
-		$query = new self ($query);
-		$query->bindValues ($values);
+		$query = new self($query);
+		$query->bindValues($values);
 
 		return $query;
 	}
@@ -281,55 +256,66 @@ class Query
 		$this->query = $query;
 	}
 
+    /**
+     * @param $values
+     * @return Query
+     */
 	public function bindValues ($values)
 	{
 		$this->values = $values;
+        return $this;
 	}
 
-	public function bindValue ($index, $value, $type = self::PARAM_STR, $canBeNull = false)
-	{
+    /**
+     * @param string $index
+     * @param mixed $value
+     * @param int $type
+     * @param bool $canBeNull
+     * @return Query
+     */
+	public function bindValue(
+        $index,
+        $value,
+        $type = self::PARAM_UNKNOWN,
+        $canBeNull = false
+    ) {
 		$this->values[$index] = array ($value, $type, $canBeNull);
 
 		// Chaining
 		return $this;
 	}
 
+    /**
+     * @return string
+     */
 	public function getParsedQuery ()
 	{
-		$keys = array ();
-		$values = array ();
+		$keys = array();
+		$values = array();
 
-		foreach ($this->values as $k => $v)
-		{
+		foreach ($this->values as $k => $v) {
 			// Column type?
-			if (!isset ($v[1]))
-			{
+			if (!isset ($v[1])) {
 				// Check for known "special types"
 				if ($v[0] instanceof Point) {
 					$v[1] = self::PARAM_POINT;
-				}
-
-				else if ($v[0] instanceof DateTime) {
+				} elseif ($v[0] instanceof DateTime) {
 					$v[1] = self::PARAM_DATE;
-				}
-
-				else {
-					$v[1] = self::PARAM_STR;
+				} else {
+					$v[1] = self::PARAM_UNKNOWN;
 				}
 			}
 
 			// NULL on empty?
-			if (!isset ($v[2]))
-			{
-				$v[2] = false;
+			if (!isset($v[2])) {
+				$v[2] = true;
 			}
 
 			// Empty and should set NULL?
 			if ($v[2] && empty ($v[0])) {
 				$value = "NULL";
-			}
-			else {
-				$value = $this->getValues ($k, $v);
+			} else {
+				$value = $this->getValues($k, $v);
 			}
 
 			$values[$k] = $value;
@@ -337,16 +323,14 @@ class Query
 			// Replace question marks or tokens?
 			if (is_string ($k)) {
 				$keys[] = '/:'.$k.'/';
-			}
-			else {
+			} else {
 				$keys[] = '/[?]/';
 			}
 		}
 
 		// First we make a list with placeholders which we will later repalce with values
 		$fakeValues = array ();
-		foreach ($values as $k => $v)
-		{
+		foreach ($values as $k => $v) {
 			$fakeValues[$k] = '{{{ctlb-custom-placeholder-' . $k . '}}}';
 		}
 
@@ -354,25 +338,30 @@ class Query
 		$query = preg_replace ($keys, $fakeValues, $this->query, 1);
 
 		// And now replace the tokens with the actual values
-		foreach ($values as $k => $v)
-		{
+		foreach ($values as $k => $v) {
 			$query = str_replace ($fakeValues[$k], $v, $query);
 		}
 
 		return $query;
 	}
 
-	private function getValue ($value, $type, $parameterName) {
+    /**
+     * @param mixed $value
+     * @param string $type
+     * @param string $parameterName
+     * @return int|string
+     * @throws InvalidParameter
+     */
+	private function getValue ($value, $type, $parameterName)
+    {
 		$db = Database::getInstance ();
 
-		switch ($type)
-		{
+		switch ($type) {
 			case self::PARAM_NUMBER:
 				if (!is_numeric ($value)) {
 					throw new InvalidParameter ("Parameter " . $parameterName . " should be numeric in query " . $this->query);
 				}
 				return (string)str_replace (',', '.', $value);
-				break;
 
 			case self::PARAM_DATE:
 
@@ -387,49 +376,68 @@ class Query
 					throw new InvalidParameter ("Parameter " . $parameterName . " should be a valid timestamp in query " . $this->query);
 				}
 
-				break;
-
 			case self::PARAM_POINT:
 				if (! ($value instanceof Point))
 				{
 					throw new InvalidParameter ("Parameter " . $parameterName . " should be a valid \\Neuron\\Models\\Point " . $this->query);
 				}
 				return $value = "POINT(" . $value->getLongtitude() . "," . $value->getLatitude() .")";
-				break;
 
 			case self::PARAM_STR:
-			default:
-
-				if (is_numeric ($value)) {
+                if (is_numeric ($value)) {
 					$value = (string)str_replace (',', '.', $value);
 				}
 
-				$value = "'" . $db->escape (strval ($value)) . "'";
-				return $value;
-				break;
+				return "'" . $db->escape (strval ($value)) . "'";
+
+            case self::PARAM_UNKNOWN:
+                if (is_int($value)) {
+                    return intval($value);
+                } elseif (is_numeric ($value)) {
+                    $value = (string)str_replace (',', '.', $value);
+                }
+                return "'" . $db->escape (strval ($value)) . "'";
+
 		}
 	}
 
-	private function getValues ($k, $v) {
-
-		if (is_array ($v[0])) {
-			$tmp = array ();
-
-			foreach ($v[0] as $kk => $vv) {
-				$tmp[] = $this->getValue ($vv, $v[1], $k . '[' . $kk . ']');
-			}
-
-			return '(' . implode (',', $tmp) . ')';
-		}
-		else {
-			return $this->getValue ($v[0], $v[1], $k);
-		}
-	}
-
+    /**
+     * @return Result|int
+     */
 	public function execute ()
 	{
-		$db = Database::getInstance ();
-		$query = $this->getParsedQuery ();
-		return $db->query ($query);
+		$db = Database::getInstance();
+		$query = $this->getParsedQuery();
+		return $db->query($query);
 	}
+
+    /**
+     * @param $k
+     * @param $v
+     * @return string
+     * @throws InvalidParameter
+     */
+    private function getValues ($k, $v)
+    {
+        if (is_array ($v[0])) {
+            $tmp = array ();
+
+            foreach ($v[0] as $kk => $vv) {
+                $tmp[] = $this->getValue($vv, $v[1], $k . '[' . $kk . ']');
+            }
+
+            return '(' . implode (',', $tmp) . ')';
+        } else {
+            return $this->getValue($v[0], $v[1], $k);
+        }
+    }
+
+    /**
+     * @param string $table
+     * @return string
+     */
+    private static function escapeTableName($table)
+    {
+        return "`$table`";
+    }
 }

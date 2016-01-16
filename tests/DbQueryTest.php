@@ -1,15 +1,19 @@
 <?php
 
-
 namespace Neuron\Tests;
 
 use PHPUnit_Framework_TestCase;
 use Neuron\DB\Query;
 
-
-class DbQueryTest
-	extends PHPUnit_Framework_TestCase
+/**
+ * Class DbQueryTest
+ * @package Neuron\Tests
+ */
+class DbQueryTest extends PHPUnit_Framework_TestCase
 {
+    /**
+     * @test
+     */
 	public function testQueryBuilder ()
 	{
 
@@ -36,6 +40,9 @@ class DbQueryTest
 		$this->assertEquals ($expected, $sql);
 	}
 
+    /**
+     * @test
+     */
 	public function testQueryBuilderSelect ()
 	{
 		$expected1 = "SELECT column1, column2, column3 FROM `table` WHERE m_id = 1 AND m_date = FROM_UNIXTIME(1379289600) AND m_string = 'Value 1'";
@@ -59,6 +66,9 @@ class DbQueryTest
 		$this->assertEquals ($expected2, $selectsql);
 	}
 
+    /**
+     * @test
+     */
 	public function testQueryBuilderInsert ()
 	{
 		// Insert query with only strings
@@ -96,6 +106,9 @@ class DbQueryTest
 		$this->assertEquals ($expected, $sql);
 	}
 
+    /**
+     * @test
+     */
 	public function testQueryBuilderUpdate ()
 	{
 		// And do the same with update
@@ -141,6 +154,9 @@ class DbQueryTest
 		$this->assertEquals ($expected, $sql);
 	}
 
+    /**
+     * @test
+     */
 	public function testQueryOrder ()
 	{
 		$expected1 = "SELECT column1, column2, column3 FROM `table` WHERE m_id = 1 AND m_date = FROM_UNIXTIME(1379289600) AND m_string = 'Value 1' ORDER BY m_id ASC";
@@ -160,6 +176,9 @@ class DbQueryTest
 		$this->assertEquals ($expected1, $selectsql);
 	}
 
+    /**
+     * @test
+     */
 	public function testQueryLimit ()
 	{
 		$expected1 = "SELECT column1, column2, column3 FROM `table` WHERE m_id = 1 AND m_date = FROM_UNIXTIME(1379289600) AND m_string = 'Value 1' LIMIT 0, 10";
@@ -179,6 +198,9 @@ class DbQueryTest
 		$this->assertEquals ($expected1, $selectsql);
 	}
 
+    /**
+     * @test
+     */
 	public function testQueryOrderAndLimit ()
 	{
 		$expected1 = "SELECT column1, column2, column3 FROM `table` WHERE m_id = 1 AND m_date = FROM_UNIXTIME(1379289600) AND m_string = 'Value 1' ORDER BY m_id ASC LIMIT 0, 10";
@@ -199,6 +221,9 @@ class DbQueryTest
 		$this->assertEquals ($expected1, $selectsql);
 	}
 
+    /**
+     * @test
+     */
 	public function testStupidQuestionmarkReplace ()
 	{
 		$values = array 
@@ -211,11 +236,14 @@ class DbQueryTest
 		// Insert
 		$query = Query::insert ('table', $values);
 
-		$expected = "INSERT INTO `table` SET m_id = '1', m_test = 'test string with a random ? in it.', m_next = 'another parameter'";
+		$expected = "INSERT INTO `table` SET m_id = 1, m_test = 'test string with a random ? in it.', m_next = 'another parameter'";
 
 		$this->assertEquals ($expected, $query->getParsedQuery ());
 	}
 
+    /**
+     * @test
+     */
 	public function testStupidNamedParameterReplace ()
 	{
 		// Insert
@@ -225,11 +253,14 @@ class DbQueryTest
 		$query->bindValue ('m_next', 'another parameter');
 		$query->bindValue ('m_id', 1);
 
-		$expected = "INSERT INTO `table` SET m_id = '1', m_test = 'test string with a random :m_next parameter in it.', m_next = 'another parameter'";
+		$expected = "INSERT INTO `table` SET m_id = 1, m_test = 'test string with a random :m_next parameter in it.', m_next = 'another parameter'";
 
 		$this->assertEquals ($expected, $query->getParsedQuery ());
 	}
 
+    /**
+     * @test
+     */
 	public function testStupidMixedNameAndQuestionmarks ()
 	{
 		// Insert
@@ -239,7 +270,7 @@ class DbQueryTest
 		$query->bindValue (2, 'another parameter');
 		$query->bindValue ('m_id', 1);
 
-		$expected = "INSERT INTO `table` SET m_id = '1', m_test = 'test string with a random :m_next parameter in it.', m_next = 'another parameter'";
+		$expected = "INSERT INTO `table` SET m_id = 1, m_test = 'test string with a random :m_next parameter in it.', m_next = 'another parameter'";
 
 		$this->assertEquals ($expected, $query->getParsedQuery ());
 	}
@@ -253,11 +284,14 @@ class DbQueryTest
 		$query->bindValue ('m_test', 'test string with a random :m_next parameter in it.');
 		$query->bindValue (2, 'another parameter');
 
-		$expected = "INSERT INTO `table` SET m_id = '1', m_test = 'test string with a random :m_next parameter in it.', m_next = 'another parameter'";
+		$expected = "INSERT INTO `table` SET m_id = 1, m_test = 'test string with a random :m_next parameter in it.', m_next = 'another parameter'";
 
 		$this->assertEquals ($expected, $query->getParsedQuery ());
 	}
 
+	/**
+	 * @test
+	 */
 	public function testStupidZeroBasedQuestionmarks ()
 	{
 		// Insert
@@ -267,8 +301,47 @@ class DbQueryTest
 		$query->bindValue (1, 'test string with a random :m_next parameter in it.');
 		$query->bindValue (2, 'another parameter');
 
-		$expected = "INSERT INTO `table` SET m_id = '1', m_test = 'test string with a random :m_next parameter in it.', m_next = 'another parameter'";
+		$expected = "INSERT INTO `table` SET m_id = 1, m_test = 'test string with a random :m_next parameter in it.', m_next = 'another parameter'";
 
 		$this->assertEquals ($expected, $query->getParsedQuery ());
+	}
+
+	/**
+	 * @test
+	 */
+	public function testNullValues()
+	{
+		$query = Query::select(
+			'tableName',
+			array('id'),
+			array(
+				'id' => 1,
+				'deleted_at' => null
+			)
+		)->getParsedQuery();
+
+		$this->assertEquals(
+			'SELECT id FROM `tableName` WHERE id = 1 AND deleted_at IS NULL',
+			$query
+		);
+	}
+
+	/**
+	 * @test
+	 */
+	public function testNullInsert()
+	{
+		$query = Query::insert(
+			'tableName',
+			array(
+				'id' => 1,
+				'name' => null
+			)
+		)->getParsedQuery();
+
+		$this->assertEquals(
+			'INSERT INTO `tableName` SET id = 1, name = NULL',
+			$query
+		);
 	}
 }

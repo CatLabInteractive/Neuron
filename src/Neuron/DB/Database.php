@@ -67,19 +67,31 @@ abstract class Database
 		return $this->insert_id;
 	}
 
+	/**
+	 * @return int
+	 */
 	public function getAffectedRows ()
 	{
 		return $this->affected_rows;
 	}
 
+	/**
+	 * @return int
+	 */
 	public function getQueryCounter ()
 	{
 		return $this->query_counter;
 	}
 
 	// Abstract functions
-	public abstract function query ($sSQL);
-	public abstract function multiQuery ($sSQL);
+	/**
+	 * @param $sSQL
+	 * @return Result|int
+	 */
+	public abstract function query($sSQL);
+
+	public abstract function multiQuery($sSQL);
+
 	public abstract function escape ($txt);
 
 	public function start ()
