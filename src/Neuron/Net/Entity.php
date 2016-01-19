@@ -1,24 +1,23 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: daedeloth
- * Date: 12/08/14
- * Time: 14:45
- */
 
 namespace Neuron\Net;
-
 
 use Neuron\Application;
 use Neuron\Config;
 use Neuron\Exceptions\DataNotSet;
 use Neuron\Exceptions\InvalidParameter;
 
+/**
+ * Class Entity
+ * @package Neuron\Net
+ */
 abstract class Entity {
 
 	const CHECK_SIGNATURE = false;
 
-	/** @var Session $session */
+	/**
+     * @var Session $session
+     */
 	private $session;
 
 	private $body;
@@ -119,6 +118,9 @@ abstract class Entity {
 					}
 
 					break;
+
+				default:
+					$this->setData($_POST);
 			}
 		}
 	}
