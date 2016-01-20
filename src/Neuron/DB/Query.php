@@ -312,7 +312,7 @@ class Query
 			}
 
 			// Empty and should set NULL?
-			if ($v[2] && empty ($v[0])) {
+			if ($v[2] && $v[0] === null) {
 				$value = "NULL";
 			} else {
 				$value = $this->getValues($k, $v);
