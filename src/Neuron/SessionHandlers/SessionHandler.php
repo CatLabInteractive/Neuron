@@ -22,21 +22,21 @@ class SessionHandler
 		{
 			$this->register ();
 
-			if (isset($sessionId)) {
-				session_id ($sessionId);
+            if (isset($sessionId)) {
+                session_id ($sessionId);
 
-				ini_set ("session.use_cookies", 0);
-				ini_set ("session.use_only_cookies", 0);
-				ini_set ("session.use_trans_sid", 0); # Forgot this one!
+                ini_set ("session.use_cookies", 0);
+                ini_set ("session.use_only_cookies", 0);
+                ini_set ("session.use_trans_sid", 0); # Forgot this one!
 
-				Logger::getInstance ()->log ("Starting session with provided id " . $sessionId, false, 'cyan');
-			} else if ($defaultSession = Tools::getInput ($_COOKIE, 'PHPSESSID', 'varchar')) {
-				Logger::getInstance ()->log ("Starting session with default cookie " . $defaultSession, false, 'cyan');
-				session_id ($defaultSession);
-			} else {
-				session_regenerate_id ();
-				Logger::getInstance ()->log ("Starting brand new session with id " . session_id (), false, 'cyan');
-			}
+                Logger::getInstance ()->log ("Starting session with provided id " . $sessionId, false, 'cyan');
+            } elseif ($defaultSession = Tools::getInput ($_COOKIE, 'PHPSESSID', 'varchar')) {
+                Logger::getInstance ()->log ("Starting session with default cookie " . $defaultSession, false, 'cyan');
+                session_id ($defaultSession);
+            } elseif (session_status() == PHP_SESSION_ACTIVE) {
+                session_regenerate_id ();
+                Logger::getInstance ()->log ("Starting brand new session with id " . session_id (), false, 'cyan');
+            }
 
 			session_start ();
 

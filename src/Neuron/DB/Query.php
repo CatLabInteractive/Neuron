@@ -311,12 +311,12 @@ class Query
 				$v[2] = true;
 			}
 
-			// Empty and should set NULL?
-			if ($v[2] && $v[0] === null) {
-				$value = "NULL";
-			} else {
-				$value = $this->getValues($k, $v);
-			}
+            // Empty and should set NULL?
+            if ($v[2] && $v[0] === null) {
+                $value = "NULL";
+            } else {
+                $value = $this->getValues($k, $v);
+            }
 
 			$values[$k] = $value;
 
