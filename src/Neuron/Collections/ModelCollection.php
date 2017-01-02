@@ -26,11 +26,19 @@ class ModelCollection
 		$this->on ('unset', array ($this, 'onUnset'));
 	}
 
-	protected function onAdd (Model $model, $offset)
+    /**
+     * @param Model|null $model
+     * @param null $offset
+     */
+	protected function onAdd (Model $model = null, $offset = null)
 	{
 		$this->map[$model->getId ()] = $model;
 	}
 
+    /**
+     * @param Model|null $model
+     * @param null $offset
+     */
 	protected function onUnset (Model $model = null, $offset = null)
 	{
 		if ($model)
@@ -41,10 +49,15 @@ class ModelCollection
 	 * Return all ids.
 	 * @return array
 	 */
-	public function getIds () {
+	public function getIds ()
+    {
 		return array_keys ($this->map);
 	}
 
+    /**
+     * @param $id
+     * @return mixed|null
+     */
 	public function getFromId ($id)
 	{
 		if (isset ($this->map[$id]))
