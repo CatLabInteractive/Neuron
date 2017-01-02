@@ -32,7 +32,9 @@ class ModelCollection
      */
 	protected function onAdd (Model $model = null, $offset = null)
 	{
-		$this->map[$model->getId ()] = $model;
+	    if ($model) {
+            $this->map[$model->getId ()] = $model;
+        }
 	}
 
     /**
@@ -41,8 +43,9 @@ class ModelCollection
      */
 	protected function onUnset (Model $model = null, $offset = null)
 	{
-		if ($model)
-			unset ($this->map[$model->getId ()]);
+		if ($model) {
+            unset ($this->map[$model->getId()]);
+        }
 	}
 
 	/**
@@ -60,8 +63,7 @@ class ModelCollection
      */
 	public function getFromId ($id)
 	{
-		if (isset ($this->map[$id]))
-		{
+		if (isset ($this->map[$id])) {
 			return $this->map[$id];
 		}
 		return null;
