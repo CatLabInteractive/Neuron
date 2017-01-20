@@ -75,17 +75,15 @@ class Request
 		if (function_exists('getallheaders')) return getallheaders();
 
 		// getallheaders not available: manually extract 'm
-		$headers = '';
+		$headers = [];
 		foreach ($_SERVER as $name => $value)
 		{
-			if (substr($name, 0, 5) == 'HTTP_')
-			{
-				$headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
-			}
-
-			else if (strtolower (substr ($name, 0, 7)) == 'content')
-			{
-				$headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', $name))))] = $value;
+			if (substr($name, 0, 5) == 'HTTP_') {
+			    $key = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))));
+				$headers[$key] = $value;
+			} else if (strtolower (substr ($name, 0, 7)) == 'content') {
+                $key = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', $name))));
+				$headers[$key] = $value;
 			}
 		}
 		return $headers;
