@@ -57,7 +57,7 @@ class DbSessionHandler
 			}
 			else
 			{
-				$this->sessions[$session_id] = null;
+				$this->sessions[$session_id] = '';
 			}
 		}
 		return $this->sessions[$session_id];
