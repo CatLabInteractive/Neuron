@@ -65,9 +65,24 @@ class URLBuilder
 		}
 	}
 
-	private static function guessAbsoluteURL () {
-		return $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . '/';
-	}
+    /**
+     * Guest absolute url from server variables.
+     * @return string
+     */
+    private static function guessAbsoluteURL () {
+        $scheme = 'http';
+        $host = 'localhost';
+
+        if (isset($_SERVER['REQUEST_SCHEME'])) {
+            $scheme = $_SERVER['REQUEST_SCHEME'];
+        }
+
+        if (isset($_SERVER['HTTP_HOST'])) {
+            $host = $_SERVER['HTTP_HOST'];
+        }
+
+        return $scheme . '://' . $host . '/';
+    }
 
 	private static function isAbsolute ($url) {
 		if (substr (strtolower ($url), 0, 4) == 'http') {
