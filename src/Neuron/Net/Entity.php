@@ -360,6 +360,36 @@ abstract class Entity {
 		return $this->headers;
 	}
 
+    /**
+     * @param $name
+     * @return string|null
+     */
+	public function getHeader($name)
+    {
+        $name = $this->getSafeHeaderName($name);
+        foreach ($this->getHeaders() as $k => $v) {
+            if ($this->getSafeHeaderName($k) === $name) {
+                return $v;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param $name
+     * @return string
+     */
+    protected function getSafeHeaderName($name)
+    {
+        $name = str_replace('-', '_', $name);
+        $name = str_replace('_', ' ', $name);
+        $name = strtolower($name);
+        $name = ucwords($name);
+        $name = str_replace(' ', '-', $name);
+
+        return $name;
+    }
+
 	public function setCookies ($cookies)
 	{
 		$this->cookies = $cookies;
