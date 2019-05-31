@@ -9,6 +9,7 @@
 namespace Neuron;
 
 use Neuron\Exceptions\InvalidParameter;
+use Neuron\Exceptions\ResponseException;
 use Neuron\Interfaces\Controller;
 use Neuron\Interfaces\Module;
 use Neuron\Models\Router\Route;
@@ -173,37 +174,40 @@ class Router {
      * Execute the router: Loop all defined before middlewares and routes, and execute the handling function if a mactch was found
      *
      * @param Request $request
-     * @return Response
      */
     public function run (Request $request)
     {
-        // Define which method we need to handle
-        $this->method = $request->getMethod ();
+        try {
 
-        // Set request
-        $this->request = $request;
+            // Define which method we need to handle
+            $this->method = $request->getMethod();
 
-        // Handle all routes
-        $numHandled = 0;
-        if (isset($this->routes[$this->method]))
-            $numHandled = $this->handle($this->routes[$this->method], true);
+            // Set request
+            $this->request = $request;
 
-        // If no route was handled, trigger the 404 (if any)
-        if ($numHandled == 0) {
-            if ($this->notFound) {
-                //call_user_func($this->notFound);
-                $this->handleMatch ($this->notFound, array ());
+            // Handle all routes
+            $numHandled = 0;
+            if (isset($this->routes[$this->method]))
+                $numHandled = $this->handle($this->routes[$this->method], true);
+
+            // If no route was handled, trigger the 404 (if any)
+            if ($numHandled == 0) {
+                if ($this->notFound) {
+                    //call_user_func($this->notFound);
+                    $this->handleMatch($this->notFound, array());
+                } else {
+
+                    $request = Response::error('Page not found.', Response::STATUS_NOTFOUND);
+                    $request->output();
+                }
             }
-            else {
 
-                $request = Response::error ('Page not found.', Response::STATUS_NOTFOUND);
-                $request->output ();
-            }
+            // If it originally was a HEAD request, clean up after ourselves by emptying the output buffer
+            if ($_SERVER['REQUEST_METHOD'] == 'HEAD') ob_end_clean();
+
+        } catch (ResponseException $e) {
+            $e->getResponse()->output();
         }
-
-        // If it originally was a HEAD request, clean up after ourselves by emptying the output buffer
-        if ($_SERVER['REQUEST_METHOD'] == 'HEAD') ob_end_clean();
-
     }
 
     /**
