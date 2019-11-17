@@ -11,117 +11,126 @@ namespace Neuron\Net;
 
 use Neuron\Exceptions\NotImplemented;
 
-class Client {
+class Client
+{
 
-	public static function getInstance ()
+	public static function getInstance()
 	{
 		static $in;
-		if (!isset ($in))
-		{
+		if (!isset ($in)) {
 			$in = new self ();
 		}
 		return $in;
 	}
 
-	public static function http_parse_headers ($raw_headers) {
+	public static function http_parse_headers($raw_headers)
+	{
 		$headers = array();
 		$key = ''; // [+]
 
-		foreach(explode("\n", $raw_headers) as $i => $h)
-		{
+		foreach (explode("\n", $raw_headers) as $i => $h) {
 			$h = explode(':', $h, 2);
 
-			if (isset($h[1]))
-			{
+			if (isset($h[1])) {
 				if (!isset($headers[$h[0]]))
 					$headers[$h[0]] = trim($h[1]);
-				elseif (is_array($headers[$h[0]]))
-				{
+				elseif (is_array($headers[$h[0]])) {
 					// $tmp = array_merge($headers[$h[0]], array(trim($h[1]))); // [-]
 					// $headers[$h[0]] = $tmp; // [-]
 					$headers[$h[0]] = array_merge($headers[$h[0]], array(trim($h[1]))); // [+]
-				}
-				else
-				{
+				} else {
 					// $tmp = array_merge(array($headers[$h[0]]), array(trim($h[1]))); // [-]
 					// $headers[$h[0]] = $tmp; // [-]
 					$headers[$h[0]] = array_merge(array($headers[$h[0]]), array(trim($h[1]))); // [+]
 				}
 
 				$key = $h[0]; // [+]
-			}
-			else // [+]
+			} else // [+]
 			{ // [+]
 				if (substr($h[0], 0, 1) == "\t") // [+]
-					$headers[$key] .= "\r\n\t".trim($h[0]); // [+]
+					$headers[$key] .= "\r\n\t" . trim($h[0]); // [+]
 				elseif (!$key) // [+]
-					$headers[0] = trim($h[0]);trim($h[0]); // [+]
+					$headers[0] = trim($h[0]);
+				trim($h[0]); // [+]
 			} // [+]
 		}
 
 		return $headers;
 	}
 
-	private function __construct ()
+	private function __construct()
 	{
 
 	}
 
-	public function get (Request $request)
+	public function get(Request $request)
 	{
-		return $this->api ($request, 'GET');
+		return $this->api($request, 'GET');
 	}
 
-	public function post (Request $request)
+	public function post(Request $request)
 	{
-		return $this->api ($request, 'POST');
+		return $this->api($request, 'POST');
 	}
 
-	public function put (Request $request)
+	public function put(Request $request)
 	{
-		return $this->api ($request, 'PUT');
+		return $this->api($request, 'PUT');
 	}
 
-	public function delete (Request $request)
+	public function delete(Request $request)
 	{
-		return $this->api ($request, 'DELETE');
+		return $this->api($request, 'DELETE');
 	}
 
-	public function process (Request $request) {
-		return $this->api ($request, $request->getMethod ());
+	public function process(Request $request)
+	{
+		return $this->api($request, $request->getMethod());
 	}
 
-	private function api (Request $request, $method)
+	private function api(Request $request, $method)
 	{
 		$ch = curl_init();
 
-		$post = $request->getBody ();
+		$post = $request->getBody();
 
-		$parsedUrl = $request->getUrl ();
+		$parsedUrl = $request->getUrl();
 
-		if ($request->getParameters ()) {
+		if ($request->getParameters()) {
 
-			if (strpos ($parsedUrl, '?')) {
+			if (strpos($parsedUrl, '?')) {
 				$parsedUrl .= '&';
-			}
-			else {
+			} else {
 				$parsedUrl .= '?';
 			}
 
-			$parsedUrl .= http_build_query ($request->getParameters ());
+			$parsedUrl .= http_build_query($request->getParameters());
 		};
 
 		curl_setopt($ch, CURLOPT_URL, $parsedUrl);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_HEADER, 1);
 
-		if ($request->getHeaders ()) {
-			$headers = $request->getHeaders ();
-			curl_setopt ($ch, CURLOPT_HTTPHEADER, $headers);
+		if ($request->getHeaders()) {
+			$headers = [];
+			foreach ($request->getHeaders() as $k => $v) {
+				switch ($k) {
+					case 'User-Agent':
+						curl_setopt($ch, CURLOPT_USERAGENT, $v);
+						break;
+
+					default:
+						$headers[$k] = $v;
+						break;
+				}
+			}
+
+			if (count($headers) > 0) {
+				curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+			}
 		}
 
-		switch ($method)
-		{
+		switch ($method) {
 			case 'GET':
 				break;
 
@@ -154,10 +163,13 @@ class Client {
 		$header = substr($output, 0, $header_size);
 		$body = substr($output, $header_size);
 
-		$response = Response::fromRaw ($body, self::http_parse_headers ($header));
-		curl_close ($ch);
+		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+		$response = Response::fromRaw($body, self::http_parse_headers($header));
+		curl_close($ch);
+
+		$response->setStatus($status);
 
 		return $response;
 	}
-
-} 
+}
