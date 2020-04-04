@@ -120,7 +120,7 @@ class Client
 						break;
 
 					default:
-						$headers[$k] = $v;
+						$headers[] = $k . ': ' . $v;
 						break;
 				}
 			}
