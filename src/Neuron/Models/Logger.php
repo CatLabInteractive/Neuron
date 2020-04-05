@@ -35,7 +35,7 @@ class Logger
 		return self::getInstance ()->log ($string, $replace, $color);
 	}
 
-	private function __construct ()
+	public function __construct ()
 	{
 		$this->start = microtime(true);
 	}
