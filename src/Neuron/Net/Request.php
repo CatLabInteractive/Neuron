@@ -428,7 +428,7 @@ class Request
 	 * @param User $user
 	 * @return $this
 	 */
-	public function setUser (User $user)
+	public function setUser (User $user = null)
 	{
 		$this->user = $user;
 		return $this;
@@ -500,6 +500,14 @@ class Request
 		}
 
 		return $this->user;
+	}
+
+	/**
+	 *
+	 */
+	public function clearUser()
+	{
+		$this->setUser(null);
 	}
 
 	/**
