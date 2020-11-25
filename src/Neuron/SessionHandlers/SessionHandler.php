@@ -1,20 +1,20 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: daedeloth
- * Date: 21/04/14
- * Time: 15:17
- */
 
 namespace Neuron\SessionHandlers;
 
 use Neuron\Models\Logger;
 use Neuron\Core\Tools;
 
+/**
+ * Class SessionHandler
+ * @package Neuron\SessionHandlers
+ */
 class SessionHandler
 	extends \SessionHandler
 {
 	private $started = false;
+
+	const SESSION_QUERY_PARAMETER = 'PSID';
 
 	public final function start ($sessionId = null)
 	{
@@ -31,8 +31,11 @@ class SessionHandler
 
                 Logger::getInstance ()->log ("Starting session with provided id " . $sessionId, false, 'cyan');
             } elseif ($defaultSession = Tools::getInput ($_COOKIE, 'PHPSESSID', 'varchar')) {
-                Logger::getInstance ()->log ("Starting session with default cookie " . $defaultSession, false, 'cyan');
-                session_id ($defaultSession);
+				Logger::getInstance()->log("Starting session with default cookie " . $defaultSession, false, 'cyan');
+				session_id($defaultSession);
+			} elseif ($queryParamSession = Tools::getInput ($_GET, self::SESSION_QUERY_PARAMETER, 'varchar')) {
+				Logger::getInstance()->log("Starting session with query parameter " . $queryParamSession, false, 'cyan');
+				session_id($queryParamSession);
             } elseif (session_status() == PHP_SESSION_ACTIVE) {
                 session_regenerate_id ();
                 Logger::getInstance ()->log ("Starting brand new session with id " . session_id (), false, 'cyan');
@@ -50,6 +53,14 @@ class SessionHandler
 
 		session_write_close ();
 		$this->started = false;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getSessionQueryString()
+	{
+		return self::SESSION_QUERY_PARAMETER . '=' . session_id();
 	}
 
 	/* Methods */
