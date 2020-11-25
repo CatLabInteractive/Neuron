@@ -80,4 +80,12 @@ class Session
 		}
 		return null;
 	}
+
+	/**
+	 * @return string
+	 */
+	public function getSessionQueryString()
+	{
+		return $this->handler->getSessionQueryString();
+	}
 }
