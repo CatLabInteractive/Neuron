@@ -37,11 +37,13 @@ class Text {
 	}
 
 	/**
-	 * @param string $domain
+	 * @param $domain
+	 * @return $this
 	 */
 	public function setDomain ($domain)
 	{
 		$this->domain = $domain;
+		return $this;
 	}
 
 	/**
