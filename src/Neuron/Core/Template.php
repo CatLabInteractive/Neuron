@@ -334,8 +334,11 @@ class Template
 	/**
 	 * Go trough all set template directories and search for
 	 * a specific template. Concat all of them.
+	 * @param $template
+	 * @param array $parameters
+	 * @return false|string
 	 */
-	private function combine ($template)
+	private function combine ($template, $parameters = [])
 	{
 		ob_start();
 
@@ -344,6 +347,10 @@ class Template
 		}
 
 		foreach ($this->values as $k => $v) {
+			${$k} = $v;
+		}
+
+		foreach ($parameters as $k => $v) {
 			${$k} = $v;
 		}
 
