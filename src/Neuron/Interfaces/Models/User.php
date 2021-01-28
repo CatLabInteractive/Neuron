@@ -5,9 +5,10 @@ interface User
 	extends \Neuron\Interfaces\Model {
 
 	/**
+	 * @param bool $formal
 	 * @return string
 	 */
-	public function getUsername ();
+	public function getDisplayName ($formal = false);
 
 	/**
 	 * @return string
