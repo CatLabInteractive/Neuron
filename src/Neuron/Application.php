@@ -81,6 +81,7 @@ class Application
 
 		// Also let php know
 		putenv ("LANG=" . $this->locale);
+		putenv ("LANGUAGE=" . $this->locale);
 
 		$result = setlocale (LC_ALL, $this->locale);
 		if (!$result)
