@@ -100,12 +100,19 @@ class Application
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getLanguage()
+	{
+		return substr($this->locale, 0, 2);
+	}
+
+	/**
 	 * Check if locale is set, and if not, set it to english.
 	 */
 	private function checkLocale ()
 	{
-		if (!isset ($this->locale))
-		{
+		if (!isset ($this->locale)) {
 			$this->setLocale ('en_GB.utf8');
 		}
 	}
