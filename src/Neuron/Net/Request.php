@@ -508,6 +508,7 @@ class Request
 	public function clearUser()
 	{
 		$this->setUser(null);
+		$this->usercallbackcalled = false;
 	}
 
 	/**
