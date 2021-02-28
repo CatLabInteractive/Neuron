@@ -29,6 +29,7 @@ class QueryTrackingParameters
 		'utm_term',
 		'utm_content',
 		'_ga',
+		'_gac',
 		'pk_vid'
 	];
 }
