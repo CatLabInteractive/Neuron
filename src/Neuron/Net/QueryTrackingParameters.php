@@ -11,7 +11,7 @@ class QueryTrackingParameters
 	/**
 	 * @return QueryTrackingParameters
 	 */
-	public function instance()
+	public static function instance()
 	{
 		static $in;
 		if (!isset($in)) {
