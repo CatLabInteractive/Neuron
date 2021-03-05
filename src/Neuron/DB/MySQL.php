@@ -148,19 +148,10 @@ class MySQL extends Database
 			$this->addQueryLog($sSQL, $duration);
 		}
 		
-		if (!$result)
-		{
-			//var_dump (debug_backtrace ());
-			//$data = debug_backtrace ();
-			//print_r ($data);
-
-
-			echo $sSQL;
-			throw new DbException ('MySQL Error: '.$this->connection->error);
-		}
-		
-		elseif ($result instanceof MySQLi_Result)
-		{
+		if (!$result) {
+			throw (new DbException ('MySQL Error: '.$this->connection->error))
+				->setErrorCode($this->connection->errno);
+		} elseif ($result instanceof MySQLi_Result) {
 			return new Result ($result);
 		}
 		
