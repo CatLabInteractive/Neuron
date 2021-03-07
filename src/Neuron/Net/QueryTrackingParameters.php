@@ -2,6 +2,8 @@
 
 namespace Neuron\Net;
 
+use Neuron\Config;
+
 /**
  * Class QueryTrackingParameters
  * @package Neuron\Net
@@ -16,6 +18,11 @@ class QueryTrackingParameters
 		static $in;
 		if (!isset($in)) {
 			$in = new self();
+
+			// Can we set these from config?
+            if (Config::get('tracking.queryParameters')) {
+                $in->queryParameters = Config::get('tracking.queryParameters');
+            }
 		}
 		return $in;
 	}
@@ -30,6 +37,7 @@ class QueryTrackingParameters
 		'utm_content',
 		'_ga',
 		'_gac',
-		'pk_vid'
+		'pk_vid',
+        '_gl'
 	];
 }
