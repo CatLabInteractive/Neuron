@@ -368,8 +368,11 @@ class Template
 
 	/**
 	 * Include a single template inside another template.
+	 * @param $template
+	 * @param array $parameters
+	 * @return false|string
 	 */
-	private function template ($template)
+	private function template ($template, $parameters = [])
 	{
 		ob_start();
 
@@ -378,6 +381,10 @@ class Template
 		}
 
 		foreach ($this->values as $k => $v) {
+			${$k} = $v;
+		}
+
+		foreach ($parameters as $k => $v) {
 			${$k} = $v;
 		}
 
