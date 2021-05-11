@@ -11,13 +11,14 @@ use Neuron\Exceptions\InvalidParameter;
  * Class Entity
  * @package Neuron\Net
  */
-abstract class Entity {
+abstract class Entity
+{
 
 	const CHECK_SIGNATURE = false;
 
 	/**
-     * @var Session $session
-     */
+	 * @var Session $session
+	 */
 	private $session;
 
 	private $body;
@@ -47,74 +48,64 @@ abstract class Entity {
 	 * @return \Neuron\Net\Request
 	 * @throws \Neuron\Exceptions\InvalidParameter
 	 */
-	public function setFromData ($data)
+	public function setFromData($data)
 	{
 		// Check signature
 		$model = $this;
 
 		$chk = self::CHECK_SIGNATURE;
 
-		if ($chk && !isset ($data['signature']))
-		{
+		if ($chk && !isset ($data['signature'])) {
 			throw new InvalidParameter ("All decoded requests must have a signature.");
 		}
 
-		if ($chk && $data['signature'] != self::calculateSignature ($data))
-		{
+		if ($chk && $data['signature'] != self::calculateSignature($data)) {
 			throw new InvalidParameter ("Leave now, and Never come Back! *gollem, gollem* (Decoded request signature mismatch).");
 		}
 
 		// The body. If data is found, body is not used.
-		if (isset ($data['data']) && !empty ($data['data']))
-		{
-			$model->setData ($data['data']);
+		if (isset ($data['data']) && !empty ($data['data'])) {
+			$model->setData($data['data']);
+		} else if (isset ($data['body'])) {
+			$model->setBody($data['body']);
 		}
 
-		else if (isset ($data['body']))
-		{
-			$model->setBody ($data['body']);
+		if (isset ($data['headers'])) {
+			$model->setHeaders($data['headers']);
 		}
 
-		if (isset ($data['headers']))
-		{
-			$model->setHeaders ($data['headers']);
+		if (isset ($data['cookies'])) {
+			$model->setCookies($data['cookies']);
 		}
 
-		if (isset ($data['cookies']))
-		{
-			$model->setCookies ($data['cookies']);
+		if (isset ($data['post'])) {
+			$model->setPost($data['post']);
 		}
 
-		if (isset ($data['post']))
-		{
-			$model->setPost ($data['post']);
-		}
-
-		if (isset ($data['status']))
-		{
-			$model->setStatus ($data['status']);
+		if (isset ($data['status'])) {
+			$model->setStatus($data['status']);
 		}
 
 		return $model;
 	}
 
-	protected function parseData () {
-
-		$headers = $this->getHeaders ();
-		if (isset ($headers['Content-Type']))
-		{
-			switch (strtolower ($headers['Content-Type']))
-			{
+	/**
+	 * Parse data based on content type.
+	 */
+	protected function parseData()
+	{
+		$contentType = $this->getHeader('content-type');
+		if ($contentType) {
+			switch (strtolower($contentType)) {
 				case 'application/json':
 				case 'text/json':
 
-					$data = json_decode ($this->getBody (), true);
+					$data = json_decode($this->getBody(), true);
 
 					if (!$data) {
-						$this->setError ('JSON decode error: ' . json_last_error_msg ());
-					}
-					else {
-						$this->setData ($data);
+						$this->setError('JSON decode error: ' . json_last_error_msg());
+					} else {
+						$this->setData($data);
 					}
 
 					break;
@@ -128,25 +119,23 @@ abstract class Entity {
 	/**
 	 * @return array
 	 */
-	public function getJSONData ()
+	public function getJSONData()
 	{
-		$data = array ();
+		$data = array();
 
-		if ($this->getData ())
-		{
-			$plaindata = $this->getData ();
-			if (!empty ($plaindata))
-			{
-				$data['data'] = $this->getData ();
+		if ($this->getData()) {
+			$plaindata = $this->getData();
+			if (!empty ($plaindata)) {
+				$data['data'] = $this->getData();
 			}
 		}
 
-		$data['body'] = $this->getBody ();
+		$data['body'] = $this->getBody();
 
-		$data['headers'] = $this->getHeaders ();
-		$data['cookies'] = $this->getCookies ();
-		$data['post'] = $this->getPost ();
-		$data['status'] = $this->getStatus ();
+		$data['headers'] = $this->getHeaders();
+		$data['cookies'] = $this->getCookies();
+		$data['post'] = $this->getPost();
+		$data['status'] = $this->getStatus();
 
 		return $data;
 	}
@@ -155,23 +144,22 @@ abstract class Entity {
 	 * @param array $data
 	 * @return string
 	 */
-	private static function calculateSignature (array $data)
+	private static function calculateSignature(array $data)
 	{
-		$txt = self::calculateBaseString ($data);
-		return md5 ($txt);
+		$txt = self::calculateBaseString($data);
+		return md5($txt);
 	}
 
-	private static function calculateBaseString (array $data)
+	private static function calculateBaseString(array $data)
 	{
 		unset ($data['signature']);
 
 		$txt = '\(^-^)/ !Stupid Rainbow Tables! \(^-^)/ ';
-		foreach ($data as $k => $v)
-		{
-			$txt .= $k . ":" . json_encode ($v) . "|";
+		foreach ($data as $k => $v) {
+			$txt .= $k . ":" . json_encode($v) . "|";
 		}
 
-		$txt .= Config::get ('app.secret');
+		$txt .= Config::get('app.secret');
 
 		return $txt;
 	}
@@ -179,31 +167,29 @@ abstract class Entity {
 	/**
 	 * @return string json
 	 */
-	public function toJSON ()
+	public function toJSON()
 	{
-		$data = $this->getJSONData ();
-		$data['random'] = mt_rand ();
-		$data['time'] = gmdate ('c');
-		$data['signature'] = $this->calculateSignature ($data);
-		return json_encode ($data);
+		$data = $this->getJSONData();
+		$data['random'] = mt_rand();
+		$data['time'] = gmdate('c');
+		$data['signature'] = $this->calculateSignature($data);
+		return json_encode($data);
 	}
 
 	/**
-	 * @throws DataNotSet
 	 * @return \Neuron\Net\Session
+	 * @throws DataNotSet
 	 */
-	public function getSession ()
+	public function getSession()
 	{
-		if (!isset ($this->session))
-		{
+		if (!isset ($this->session)) {
 			// First check the router
 			if ($this instanceof Response) {
-				$router = Application::getInstance ()->getRouter ();
+				$router = Application::getInstance()->getRouter();
 				if ($router) {
-					$this->session = $router->getRequest ()->getSession ();
+					$this->session = $router->getRequest()->getSession();
 				}
-			}
-			else {
+			} else {
 				throw new DataNotSet ("No session is set in the request.");
 			}
 		}
@@ -214,7 +200,7 @@ abstract class Entity {
 	 * @param Session $session
 	 * @return $this
 	 */
-	public function setSession (Session $session)
+	public function setSession(Session $session)
 	{
 		$this->session = $session;
 		return $this;
@@ -224,7 +210,7 @@ abstract class Entity {
 	 * @param $body
 	 * @return $this
 	 */
-	public function setBody ($body)
+	public function setBody($body)
 	{
 		$this->body = $body;
 		return $this;
@@ -233,7 +219,7 @@ abstract class Entity {
 	/**
 	 * @return mixed
 	 */
-	public function getBody ()
+	public function getBody()
 	{
 		return $this->body;
 	}
@@ -242,16 +228,16 @@ abstract class Entity {
 	 * @param $id
 	 * @return $this
 	 */
-	public function setApplication ($id)
+	public function setApplication($id)
 	{
-		$this->setSession ('application', $id);
+		$this->setSession('application', $id);
 		return $this;
 	}
 
 	/**
 	 * @return mixed
 	 */
-	public function getApplication ()
+	public function getApplication()
 	{
 		return $this->application;
 	}
@@ -260,7 +246,7 @@ abstract class Entity {
 	 * @param $path
 	 * @return $this
 	 */
-	public function setPath ($path)
+	public function setPath($path)
 	{
 		$this->path = $path;
 		return $this;
@@ -269,7 +255,7 @@ abstract class Entity {
 	/**
 	 * @return mixed
 	 */
-	public function getPath ()
+	public function getPath()
 	{
 		return $this->path;
 	}
@@ -278,7 +264,7 @@ abstract class Entity {
 	 * @param array $post
 	 * @return $this
 	 */
-	public function setPost ($post)
+	public function setPost($post)
 	{
 		$this->post = $post;
 		return $this;
@@ -287,7 +273,7 @@ abstract class Entity {
 	/**
 	 * @return array
 	 */
-	public function getPost ()
+	public function getPost()
 	{
 		return $this->post;
 	}
@@ -296,7 +282,7 @@ abstract class Entity {
 	 * @param mixed $data
 	 * @return $this
 	 */
-	public function setData ($data)
+	public function setData($data)
 	{
 		$this->data = $data;
 		return $this;
@@ -305,7 +291,7 @@ abstract class Entity {
 	/**
 	 * @return mixed
 	 */
-	public function getData ()
+	public function getData()
 	{
 		return $this->data;
 	}
@@ -313,16 +299,14 @@ abstract class Entity {
 	/**
 	 * Check if request has data
 	 */
-	public function hasData ()
+	public function hasData()
 	{
-		if (!isset ($this->data))
-		{
+		if (!isset ($this->data)) {
 			if (!isset ($this->error))
-				$this->setError ('No input data set');
+				$this->setError('No input data set');
 
 			return false;
-		}
-		else {
+		} else {
 			return true;
 		}
 	}
@@ -332,11 +316,10 @@ abstract class Entity {
 	 * @param string $value
 	 * @return $this
 	 */
-	public function setHeader ($name, $value = null)
+	public function setHeader($name, $value = null)
 	{
-		if (!isset ($this->headers))
-		{
-			$this->headers = array ();
+		if (!isset ($this->headers)) {
+			$this->headers = array();
 		}
 		$this->headers[$name] = $value;
 		return $this;
@@ -346,7 +329,7 @@ abstract class Entity {
 	 * @param array $headers
 	 * @return $this
 	 */
-	public function setHeaders ($headers)
+	public function setHeaders($headers)
 	{
 		$this->headers = $headers;
 		return $this;
@@ -355,67 +338,66 @@ abstract class Entity {
 	/**
 	 * @return array
 	 */
-	public function getHeaders ()
+	public function getHeaders()
 	{
 		return $this->headers;
 	}
 
-    /**
-     * @param $name
-     * @return string|null
-     */
+	/**
+	 * @param $name
+	 * @return string|null
+	 */
 	public function getHeader($name)
-    {
-        $name = $this->getSafeHeaderName($name);
-        foreach ($this->getHeaders() as $k => $v) {
-            if ($this->getSafeHeaderName($k) === $name) {
-                return $v;
-            }
-        }
-        return null;
-    }
+	{
+		$name = $this->getSafeHeaderName($name);
+		foreach ($this->getHeaders() as $k => $v) {
+			if ($this->getSafeHeaderName($k) === $name) {
+				return $v;
+			}
+		}
+		return null;
+	}
 
-    /**
-     * @param $name
-     * @return string
-     */
-    protected function getSafeHeaderName($name)
-    {
-        $name = str_replace('-', '_', $name);
-        $name = str_replace('_', ' ', $name);
-        $name = strtolower($name);
-        $name = ucwords($name);
-        $name = str_replace(' ', '-', $name);
+	/**
+	 * @param $name
+	 * @return string
+	 */
+	protected function getSafeHeaderName($name)
+	{
+		$name = str_replace('-', '_', $name);
+		$name = str_replace('_', ' ', $name);
+		$name = strtolower($name);
+		$name = ucwords($name);
+		$name = str_replace(' ', '-', $name);
 
-        return $name;
-    }
+		return $name;
+	}
 
-	public function setCookies ($cookies)
+	public function setCookies($cookies)
 	{
 		$this->cookies = $cookies;
 		return $this;
 	}
 
-	public function getCookies ()
+	public function getCookies()
 	{
 		return $this->cookies;
 	}
 
-	public function setStatus ($status)
+	public function setStatus($status)
 	{
 		$this->status = $status;
 		return $this;
 	}
 
-	public function isStatusSet ()
+	public function isStatusSet()
 	{
 		return isset ($this->status);
 	}
 
-	public function getStatus ()
+	public function getStatus()
 	{
-		if (isset ($this->status))
-		{
+		if (isset ($this->status)) {
 			return $this->status;
 		}
 		return 200;
@@ -425,7 +407,7 @@ abstract class Entity {
 	 * @param $error
 	 * @return $this
 	 */
-	public function setError ($error)
+	public function setError($error)
 	{
 		$this->error = $error;
 		return $this;
@@ -434,7 +416,7 @@ abstract class Entity {
 	/**
 	 * @return string
 	 */
-	public function getError ()
+	public function getError()
 	{
 		return $this->error;
 	}
@@ -443,8 +425,8 @@ abstract class Entity {
 	 * Return an error response.
 	 * @return Response
 	 */
-	public function getErrorResponse ()
+	public function getErrorResponse()
 	{
-		return Response::error ($this->getError (), self::STATUS_INVALID_INPUT);
+		return Response::error($this->getError(), self::STATUS_INVALID_INPUT);
 	}
 } 
