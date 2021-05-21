@@ -33,7 +33,7 @@ class ErrorCollection extends Collection {
     /**
      * @return array
      */
-    public function getLocalisableData()
+    public function getDetailedData()
     {
         $out = array ();
         foreach ($this as $v) {
@@ -42,14 +42,16 @@ class ErrorCollection extends Collection {
                     'message' => $v->getMessage(),
                     'template' => $v->getTemplate(),
                     'arguments' => $v->getArguments(),
-                    'subject' => $v->getSubject()
+                    'subject' => $v->getSubject(),
+					'code' => $v->getCode()
                 ];
             } else {
                 $out[] = [
                     'message' => $v->getMessage(),
                     'template' => $v->getMessage(),
                     'arguments' => [],
-                    'subject' => null
+                    'subject' => null,
+					'code' => null
                 ];
             }
         }

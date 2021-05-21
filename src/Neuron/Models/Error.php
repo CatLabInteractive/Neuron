@@ -24,6 +24,11 @@ class Error
      */
     private $subject;
 
+	/**
+	 * @var string
+	 */
+    private $code;
+
     /**
      * Error constructor.
      * @param $message
@@ -44,6 +49,16 @@ class Error
         $this->subject = $subject;
         return $this;
     }
+
+	/**
+	 * @param $code
+	 * @return $this
+	 */
+    public function setCode($code)
+	{
+		$this->code = $code;
+		return $this;
+	}
 
     /**
      * @return string
@@ -68,6 +83,14 @@ class Error
     {
         return $this->arguments;
     }
+
+	/**
+	 * @return string
+	 */
+    public function getCode()
+	{
+		return $this->code;
+	}
 
     /**
      * @return string
