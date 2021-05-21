@@ -7,7 +7,9 @@
  */
 
 namespace Neuron\Models\Helpers;
+
 use Neuron\Collections\ErrorCollection;
+use Neuron\Models\Error;
 
 /**
  * Class Errorable
@@ -19,65 +21,77 @@ use Neuron\Collections\ErrorCollection;
 abstract class Errorable
 {
 
-	/**
-	 * @var string array
-	 */
-	private $errors = null;
+    /**
+     * @var ErrorCollection array
+     */
+    private $errors = null;
 
-	private function touchErrors ()
-	{
-		if (!isset ($this->errors)) {
-			$this->setErrors (new ErrorCollection ());
-		}
-	}
+    /**
+     *
+     */
+    private function touchErrors()
+    {
+        if (!isset ($this->errors)) {
+            $this->setErrors($this->createErrorCollection());
+        }
+    }
 
-	/**
-	 * @param string $error
-	 */
-	public function setError ($error)
-	{
-		call_user_func_array (array ($this, 'addError'), func_get_args ());
-	}
+    /**
+     * @return ErrorCollection
+     */
+    protected function createErrorCollection()
+    {
+        return new ErrorCollection ();
+    }
 
-	/**
-	 * Set the error array. By reference!
-	 */
-	public function setErrors (ErrorCollection $errors){
-		$this->errors = $errors;
-	}
+    /**
+     * @param string $error
+     */
+    public function setError($error)
+    {
+        return call_user_func_array(array($this, 'addError'), func_get_args());
+    }
 
-	/**
-	 * @return string|null
-	 */
-	public function getError ()
-	{
-		$this->touchErrors ();
-		if (count ($this->errors) > 0)
-		{
-			return end ($this->errors);
-		}
-		return null;
-	}
+    /**
+     * Set the error array. By reference!
+     */
+    public function setErrors(ErrorCollection $errors)
+    {
+        $this->errors = $errors;
+    }
 
-	/**
-	 * @param $error
-	 */
-	public function addError ($error)
-	{
-		$args = func_get_args ();
-		array_shift ($args);
+    /**
+     * @return string|null
+     */
+    public function getError()
+    {
+        $this->touchErrors();
+        if (count($this->errors) > 0) {
+            return end($this->errors);
+        }
+        return null;
+    }
 
-		$this->touchErrors ();
-		$this->errors[] = vsprintf ($error, $args);
-	}
+    /**
+     * @param $error
+     * @return Error
+     */
+    public function addError($error)
+    {
+        $args = func_get_args();
+        array_shift($args);
 
-	/**
-	 * @return ErrorCollection
-	 */
-	public function getErrors ()
-	{
-		$this->touchErrors ();
-		return $this->errors;
-	}
+        $this->touchErrors();
+        return $this->errors->addError($error, $args);
+    }
+
+    /**
+     * @return ErrorCollection
+     */
+    public function getErrors()
+    {
+        $this->touchErrors();
+        return $this->errors;
+    }
 
 } 
