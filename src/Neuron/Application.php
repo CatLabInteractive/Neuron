@@ -11,9 +11,9 @@ namespace Neuron;
 use Neuron\Core\Template;
 use Neuron\Exceptions\DataNotSet;
 use Neuron\Models\Observable;
+use Neuron\Models\Router\Filter;
 use Neuron\Net\Request;
 use Neuron\Net\Session;
-use Neuron\SessionHandlers\DefaultSessionHandler;
 use Neuron\SessionHandlers\SessionHandler;
 
 class Application
@@ -31,6 +31,11 @@ class Application
 
 	/** @var bool */
 	private $isFirstDispatch = true;
+
+	/**
+	 * @var Session|null
+	 */
+	private $session = null;
 
 	private static $in;
 
@@ -60,6 +65,23 @@ class Application
 	public function setRouter (Router $router)
 	{
 		$this->router = $router;
+
+		// Here we will make a special filter called 'session' that initiates the session handler if it is requested
+		// by the router. We will also make sure that the session filter is the first one to be loaded.
+		// Yes, this isn't perfect design, but this framework is 10-ish years old and only used for a few self made projects.
+		$this->router->addFilter('session', function(Filter $filter) {
+
+			// Set session from the session handler
+			$this->session = new Session ($this->getSessionHandler());
+			$this->session->connect();
+
+			// Set session in request
+			$filter->getRequest()->setSession($this->session);
+
+			return true;
+
+		}, 100);
+
 		$this->trigger ('router:set');
 	}
 
@@ -165,13 +187,6 @@ class Application
 			$request = Request::fromInput ();
 		}
 
-		// Set session from the session handler
-		$session = new Session ($this->getSessionHandler ());
-		$session->connect ();
-
-		// Set session in request
-		$request->setSession ($session);
-
 		// Trigger before
 		$this->trigger ('dispatch:before', $request);
 
@@ -182,7 +197,9 @@ class Application
 		$this->trigger ('dispatch:after', $request);
 
 		// Disconnect the session
-		$session->disconnect ();
+		if ($this->session) {
+			$this->session->disconnect();
+		}
 
 		// End
 		$this->trigger ('dispatch:terminate');

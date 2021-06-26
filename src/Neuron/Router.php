@@ -50,7 +50,7 @@ class Router {
     /** @var Module|null */
     private $module = null;
 
-    /** @var callable[] */
+    /** @var [callable[],int] */
     private $filters = array ();
 
     /**
@@ -275,10 +275,14 @@ class Router {
      * Add a filter that can be added.
      * @param string $filtername
      * @param callable $method
+	 * @param int $priority
      */
-    public function addFilter ($filtername, callable $method = null)
+    public function addFilter ($filtername, callable $method = null, $priority = 0)
     {
-        $this->filters[$filtername] = $method;
+        $this->filters[$filtername] = [
+        	'callback' => $method,
+			'priority' => $priority
+		];
     }
 
     /**
@@ -296,22 +300,48 @@ class Router {
         }
 
         // First handle the filters
+
+		// Find all filters that need to be execued
+		$filtersToExecute = [];
+
         foreach ($route->getFilters () as $filter)
         {
             // Check if exist
-            if (!isset ($this->filters[$filter->getName ()]))
-                throw new InvalidParameter ("Filter " . $filter->getName () . " is not registered in the router.");
-
-            $filter->setRequest ($this->request);
-            $response = $filter->check ($this->filters[$filter->getName ()]);
-            $filter->clearRequest ();
-
-            // If output was not TRUE, handle the filter return value as output.
-            if ($response !== true) {
-                $this->output ($response);
-                return;
+            if (!isset ($this->filters[$filter->getName ()])) {
+                throw new InvalidParameter ("Filter " . $filter->getName() . " is not registered in the router.");
             }
+
+            $filterCallback = $this->filters[$filter->getName()];
+
+            $filtersToExecute[] = [
+            	'callback' => $filterCallback['callback'],
+				'priority' => $filterCallback['priority'],
+				'filter' => $filter
+			];
         }
+
+        // order filters on priority
+		usort($filtersToExecute, function($a, $b) {
+			if ($a['priority'] == $b['priority']) {
+				return 0;
+			}
+			return $a['priority'] < $b['priority'] ? 1 : -1;
+		});
+
+        foreach ($filtersToExecute as $v) {
+
+        	$filter = $v['filter'];
+
+			$filter->setRequest ($this->request);
+			$response = $filter->check ($v['callback']);
+			$filter->clearRequest ();
+
+			// If output was not TRUE, handle the filter return value as output.
+			if ($response !== true) {
+				$this->output ($response);
+				return;
+			}
+		}
 
         if (is_callable ($function))
         {
