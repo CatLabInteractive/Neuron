@@ -65,6 +65,7 @@ class Application
 	public function setRouter (Router $router)
 	{
 		$this->router = $router;
+		$router->setApplication($this);
 
 		// Here we will make a special filter called 'session' that initiates the session handler if it is requested
 		// by the router. We will also make sure that the session filter is the first one to be loaded.
@@ -83,6 +84,7 @@ class Application
 		}, 100);
 
 		$this->trigger ('router:set');
+
 	}
 
 	/**
@@ -204,4 +206,12 @@ class Application
 		// End
 		$this->trigger ('dispatch:terminate');
 	}
+
+    /**
+     * @param Request $request
+     */
+	public function postFilters(Request $request)
+    {
+        $this->trigger ('dispatch:post-filters', $request);
+    }
 }

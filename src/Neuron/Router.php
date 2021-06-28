@@ -54,6 +54,19 @@ class Router {
     private $filters = array ();
 
     /**
+     * @var Application
+     */
+    private $app;
+
+    /**
+     * @param Application $app
+     */
+    public function setApplication(Application $app)
+    {
+        $this->app = $app;
+    }
+
+    /**
      * Store a route and a handling function to be executed when accessed using one of the specified methods
      *
      * @param string $methods Allowed methods, | delimited
@@ -342,6 +355,9 @@ class Router {
 				return;
 			}
 		}
+
+        // trigger post filter events
+        $this->app->postFilters($this->request);
 
         if (is_callable ($function))
         {
