@@ -79,6 +79,7 @@ class Application
 			// Set session in request
 			$filter->getRequest()->setSession($this->session);
 
+			$this->trigger('dispatch:session', $filter->getRequest());
 			return true;
 
 		}, 100);
