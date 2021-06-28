@@ -209,7 +209,6 @@ class Router {
                     //call_user_func($this->notFound);
                     $this->handleMatch($this->notFound, array());
                 } else {
-
                     $request = Response::error('Page not found.', Response::STATUS_NOTFOUND);
                     $request->output();
                 }
@@ -234,13 +233,15 @@ class Router {
 
     /**
      * Set the 404 handling function
-     * @param object $fn The function to be executed
+     * @param $fn
+     * @return Route|object
      */
     public function set404($fn) {
         $this->notFound = new Route ("404");
         $this->notFound->setFunction ($fn);
-    }
 
+        return $this->notFound;
+    }
 
     /**
      * Handle a a set of routes: if a match is found, execute the relating handling function
