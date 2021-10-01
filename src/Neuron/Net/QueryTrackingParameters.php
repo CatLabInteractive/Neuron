@@ -38,6 +38,7 @@ class QueryTrackingParameters
 		'_ga',
 		'_gac',
 		'pk_vid',
-        '_gl'
+        '_gl',
+		'_cc'
 	];
 }
