@@ -249,4 +249,13 @@ class Collection
 		end($this->data);
 		return $this->data[key($this->data)];
 	}
+
+	/**
+	 * Clear array
+	 */
+	public function clear ()
+	{
+		$this->data = array ();
+		$this->rewind ();
+	}
 }
