@@ -347,7 +347,7 @@ class Router {
         	$filter = $v['filter'];
 
 			$filter->setRequest ($this->request);
-			$response = $filter->check ($v['callback']);
+			$response = $filter->check ($v['callback'], $params);
 			$filter->clearRequest ();
 
 			// If output was not TRUE, handle the filter return value as output.

@@ -85,10 +85,11 @@ class Filter {
 
 	/**
 	 * @param $callback
+	 * @param array $parameters
 	 * @return mixed
 	 */
-	public function check ($callback)
+	public function check ($callback, $parameters = [])
 	{
-		return call_user_func_array ($callback, array ($this));
+		return call_user_func_array ($callback, array ($this, $parameters));
 	}
 }
