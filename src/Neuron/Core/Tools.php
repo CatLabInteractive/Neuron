@@ -82,8 +82,10 @@ class Tools
 		
 		elseif ($type == 'password')
 		{
-			// Minimum 8 characters
-			return self::isValidUTF8 ($value) && strlen ($value) > 7;
+			// Minimum 8 characters, maximum 256 characters.
+			return self::isValidUTF8 ($value)
+				&& strlen ($value) > 7
+				&& strlen ($value) <= 256;
 		}
 		
 		elseif ($type == 'email')
