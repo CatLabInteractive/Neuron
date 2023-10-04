@@ -35,19 +35,19 @@ class Tools
 					case 'date':
 						$time = explode ('-', $dat[$key]);
 						return mktime (0, 0, 1, $time[1], $time[2], $time[0]);
-					break;
 
 					case 'datetime':
 						return new DateTime ($dat[$key]);
-					break;
 
 					case 'base64':
 						return base64_decode ($dat[$key]);
-					break;
+
+					case 'html':
+					case 'raw':
+						return $dat[$key];
 
 					default:
-						return $dat[$key];
-					break;
+						return strip_tags($dat[$key]);
 				}
 			}
 
@@ -70,12 +70,17 @@ class Tools
 			return true;
 		}
 
-		else if ($type == 'bool')
+		elseif ($type == 'bool')
 		{
 			return $value == 1 || $value == 'true';
 		}
 		
-		elseif ($type == 'varchar' || $type == 'string')
+		elseif ($type == 'varchar' || $type == 'string' || $type == 'html')
+		{
+			return self::isValidUTF8 ($value);
+		}
+
+		elseif ($type === 'name')
 		{
 			return self::isValidUTF8 ($value);
 		}
@@ -150,6 +155,11 @@ class Tools
 		elseif ($type == 'int')
 		{
 			return is_numeric ($value) && (int)$value == $value;
+		}
+
+		elseif ($type == 'raw')
+		{
+			return true;
 		}
 		
 		else {
