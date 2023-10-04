@@ -82,7 +82,7 @@ class Tools
 
 		elseif ($type === 'name')
 		{
-			return self::isValidUTF8 ($value);
+			return self::isValidUTF8 ($value) && strip_tags($value) === $value;
 		}
 		
 		elseif ($type == 'password')
