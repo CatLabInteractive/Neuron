@@ -10,10 +10,11 @@ class Template
 {
 
 	private $values = array ();
-	
+	private $rawValues = array ();
+
 	private $sTextFile = null;
 	private $sTextSection = null;
-	
+
 	private $objText = null;
 
 	private $layoutRender = null;
@@ -32,10 +33,10 @@ class Template
 
 	/** @var array $helpers */
 	static $helpers = array ();
-	
+
 	public static function load ()
 	{
-	
+
 	}
 
 	/**
@@ -80,8 +81,8 @@ class Template
 	}
 
 	/**
-	* I believe this is a nicer way to do the directory setting.
-	*/
+	 * I believe this is a nicer way to do the directory setting.
+	 */
 	public static function setPath ($path)
 	{
 		self::$paths = array ();
@@ -95,7 +96,7 @@ class Template
 	 * @param $path: path to add
 	 * @param $prefix: only templates starting with given prefix will be loaded from this path.
 	 * @param $priority
-	*/
+	 */
 	public static function addPath ($path, $prefix = '', $priority = 0)
 	{
 		if (substr ($path, -1) !== '/')
@@ -141,7 +142,7 @@ class Template
 	private function setTextSection ($sTextSection, $sTextFile = null)
 	{
 		$this->sTextSection = $sTextSection;
-		
+
 		if (isset ($sTextFile))
 		{
 			$this->sTextFile = $sTextFile;
@@ -169,7 +170,13 @@ class Template
 	 */
 	public function set ($var, $value, $overwrite = false, $first = false)
 	{
-		$this->setVariable ($var, $value, $overwrite, $first);
+		$this->setVariable ($var, $value, $overwrite, $first, false);
+		return $this;
+	}
+
+	public function setRaw($var, $value, $overwrite = false, $first = false)
+	{
+		$this->setVariable ($var, $value, $overwrite, $first, true);
 		return $this;
 	}
 
@@ -179,23 +186,27 @@ class Template
 	 * @param bool $overwrite
 	 * @param bool $first
 	 */
-	private function setVariable ($var, $value, $overwrite = false, $first = false)
+	private function setVariable ($var, $value, $overwrite = false, $first = false, $raw = false)
 	{
+		if ($raw) {
+			$this->rawValues[$var] = true;
+		}
+
 		if ($overwrite) {
 			$this->values[$var] = $value;
 		}
-		
+
 		else {
 			if (isset ($this->values[$var])) {
 				if ($first) {
 					$this->values[$var] = $value.$this->values[$var];
 				}
-				
+
 				else {
 					$this->values[$var].= $value;
 				}
 			}
-			
+
 			else {
 				$this->values[$var] = $value;
 			}
@@ -251,9 +262,9 @@ class Template
 		{
 			return $out;
 		}
-		return false;	
+		return false;
 	}
-	
+
 	public static function hasTemplate ($template)
 	{
 		return self::getFilenames ($template) ? true : false;
@@ -283,20 +294,35 @@ class Template
 
 		foreach (self::$shares as $k => $v)
 		{
-			${$k} = $v;
+			if (is_string($v) && !$this->isRaw($k)) {
+				${$k} = htmlentities($v);
+				${'_' . $k . '_'} = $v;
+			} else {
+				${$k} = $v;
+			}
 		}
 
 		foreach ($this->values as $k => $v) {
-			${$k} = $v;
+			if (is_string($v) && !$this->isRaw($k)) {
+				${$k} = htmlentities($v);
+				${'_' . $k . '_'} = $v;
+			} else {
+				${$k} = $v;
+			}
 		}
 
 		include $ctlbtmpltfiles[0];
-		
+
 		$val = ob_get_contents();
 
 		ob_end_clean();
 
 		return $this->processRenderQueue (array ('content' => $val));
+	}
+
+	private function isRaw($var)
+	{
+		return isset($this->rawValues[$var]);
 	}
 
 	private function processRenderQueue ($contents = array ())
@@ -306,13 +332,17 @@ class Template
 
 			// Set the variables that have been set here.
 			foreach ($this->values as $k => $v) {
-				$template->set ($k, $v);
+				if ($this->isRaw($k)) {
+					$template->setRaw($k, $v);
+				} else {
+					$template->set($k, $v);
+				}
 			}
 
 			// And now set the content blocks.
 			// This might overwrite other sets.
 			foreach ($contents as $k => $v) {
-				$template->set ($k, $v, true);
+				$template->setRaw ($k, $v, true);
 			}
 
 			return $template->parse ($this->layoutRender);
