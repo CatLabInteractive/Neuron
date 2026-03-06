@@ -2,14 +2,16 @@
 
 namespace Neuron\Tests;
 
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 use Neuron\DB\Query;
 
 /**
  * Class DbQueryTest
  * @package Neuron\Tests
  */
-class DbQueryTest extends PHPUnit_Framework_TestCase
+#[Group('database')]
+class DbQueryTest extends TestCase
 {
     /**
      * @test

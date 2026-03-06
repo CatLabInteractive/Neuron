@@ -34,7 +34,7 @@ class Tools
 					// For date's return timestamp.
 					case 'date':
 						$time = explode ('-', $dat[$key]);
-						return mktime (0, 0, 1, $time[1], $time[2], $time[0]);
+						return mktime (0, 0, 1, (int)$time[1], (int)$time[2], (int)$time[0]);
 
 					case 'datetime':
 						return new DateTime ($dat[$key]);
@@ -106,8 +106,15 @@ class Tools
 
 		elseif ($type == 'date')
 		{
-			$time = explode ('-', $value);
-			return self::isValidUTF8 ($value) && (count ($time) == 3);
+			if (!self::isValidUTF8($value)) {
+				return false;
+			}
+			$time = explode('-', $value);
+			return count($time) === 3
+				&& ctype_digit($time[0])
+				&& ctype_digit($time[1])
+				&& ctype_digit($time[2])
+				&& checkdate((int)$time[1], (int)$time[2], (int)$time[0]);
 		}
 
 		elseif ($type == 'datetime') {
