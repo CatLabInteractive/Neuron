@@ -72,7 +72,7 @@ class Tools
 
 		elseif ($type == 'bool')
 		{
-			return $value == 1 || $value == 'true';
+			return $value === 1 || $value === '1' || $value === 'true';
 		}
 		
 		elseif ($type == 'varchar' || $type == 'string' || $type == 'html')
