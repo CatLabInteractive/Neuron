@@ -3,11 +3,11 @@
 
 namespace Neuron\Tests;
 
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\TestCase;
 
 
 class TokenGeneratorTest
-	extends PHPUnit_Framework_TestCase
+	extends TestCase
 {
 	public function testLengthSimplified ()
 	{

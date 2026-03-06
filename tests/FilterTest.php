@@ -10,13 +10,13 @@ namespace Neuron\Tests;
 
 use Neuron\Filter\Context;
 use Neuron\Filter\Field;
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\TestCase;
 
 use Neuron\Filter\Parser;
 use Neuron\Filter\Scanner;
 
 class FilterTest
-	extends PHPUnit_Framework_TestCase
+	extends TestCase
 {
 
 	public function testFilter ()
