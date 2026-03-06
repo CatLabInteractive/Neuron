@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit bootstrap="tests/bootstrap.php"
-         colors="true"
-         cacheDirectory=".phpunit.cache">
-
-	<source>
-		<include>
-			<directory>src/Neuron</directory>
-		</include>
-	</source>
+         colors="true">
 
 	<testsuites>
 		<testsuite name="Neuron Test Suite">
