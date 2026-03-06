@@ -40,5 +40,5 @@ Neuron is a lightweight PHP framework by CatLab Interactive. It provides core ut
 ## Build & Dependencies
 - PHP >= 8.1
 - Composer for dependency management
-- Key dependencies: `nesbot/carbon`, `ext-gettext`
+- Key dependencies: `ext-gettext`
 - Dev dependency: `phpunit/phpunit`
