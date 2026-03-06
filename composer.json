@@ -16,8 +16,7 @@
 
     "require" : {
         "php": ">=7.4",
-        "ext-gettext" : "*",
-        "nesbot/carbon": "^2.0||^3.0"
+        "ext-gettext" : "*"
     },
 
     "require-dev": {
