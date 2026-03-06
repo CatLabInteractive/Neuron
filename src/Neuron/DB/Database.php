@@ -54,11 +54,26 @@ abstract class Database
 		$this->logger = $logger;
 	}
 
+	/** @var Database|null Test-only override, set via setInstance() */
+	private static $testInstance = null;
+
+	/**
+	 * Override the singleton instance for testing purposes.
+	 * @param Database|null $instance
+	 */
+	public static function setInstance (?Database $instance)
+	{
+		self::$testInstance = $instance;
+	}
+
 	/**
 	 * @return Database
 	 */
 	public static function getInstance ()
 	{
+		if (self::$testInstance !== null) {
+			return self::$testInstance;
+		}
 		return self::__getInstance ();
 	}
 
