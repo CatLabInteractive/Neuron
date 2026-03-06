@@ -3,12 +3,14 @@
 namespace Neuron\Tests;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\Group;
 use Neuron\DB\Query;
 
 /**
  * Class DbQueryTest
  * @package Neuron\Tests
  */
+#[Group('database')]
 class DbQueryTest extends TestCase
 {
     /**
