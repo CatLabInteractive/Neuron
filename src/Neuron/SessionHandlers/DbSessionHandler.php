@@ -19,6 +19,7 @@ class DbSessionHandler
 	private $sessions = array ();
 
 	/* Methods */
+	#[\ReturnTypeWillChange]
 	public function open ( $save_path , $name )
 	{
 		// Force loading of query.
@@ -28,24 +29,28 @@ class DbSessionHandler
 		return true;
 	}
 
+	#[\ReturnTypeWillChange]
 	public function close (  )
 	{
 		// Nothing to do here either.
 		return true;
 	}
 
+	#[\ReturnTypeWillChange]
 	public function destroy ( $session_id )
 	{
 		Query::delete ('sessions', array ('id' => $session_id))->execute ();
 		return true;
 	}
 
+	#[\ReturnTypeWillChange]
 	public function gc ( $maxlifetime )
 	{
 		Query::delete ('sessions', array ('set_time' => array (time () - 60 * 10, Query::PARAM_NUMBER, '<')))->execute ();
 		return true;
 	}
 
+	#[\ReturnTypeWillChange]
 	public function read ( $session_id )
 	{
 		if (!isset ($this->sessions[$session_id]))
@@ -63,6 +68,7 @@ class DbSessionHandler
 		return $this->sessions[$session_id];
 	}
 
+	#[\ReturnTypeWillChange]
 	public function write ( $session_id , $session_data )
 	{
 		$this->sessions[$session_id] = $session_data;

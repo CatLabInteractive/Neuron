@@ -64,32 +64,38 @@ class SessionHandler
 	}
 
 	/* Methods */
+	#[\ReturnTypeWillChange]
 	public function close ()
 	{
 		return parent::close ();
 	}
 
+	#[\ReturnTypeWillChange]
 	public function destroy ($session_id)
 	{
 		return parent::destroy ($session_id);
 	}
 
+	#[\ReturnTypeWillChange]
 	public function gc ( $maxlifetime )
 	{
 		return parent::gc ($maxlifetime);
 	}
 
+	#[\ReturnTypeWillChange]
 	public function open ( $save_path , $name )
 	{
 		return parent::open ( $save_path, $name );
 	}
 
+	#[\ReturnTypeWillChange]
 	public function read ( $session_id )
 	{
 		return parent::read ($session_id);
 	}
 
 
+	#[\ReturnTypeWillChange]
 	public function write ( $session_id , $session_data )
 	{
 		return parent::write ($session_id, $session_data);
