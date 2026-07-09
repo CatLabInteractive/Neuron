@@ -17,12 +17,12 @@ interface Controller
      * Controllers must know what module they are from.
      * @param Module $module
      */
-    public function __construct (Module $module = null);
+    public function __construct (?Module $module = null);
 
     /**
      * Set (or clear) the request object.
      * @param Request $request
      * @return void
      */
-    public function setRequest (Request $request = null);
+    public function setRequest (?Request $request = null);
 }

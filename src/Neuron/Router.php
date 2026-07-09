@@ -95,7 +95,7 @@ class Router {
      * that match the path of all future matches.
      * @param Module $module
      */
-    private function setModule (Module $module = null)
+    private function setModule (?Module $module = null)
     {
         $this->module = $module;
     }
@@ -291,7 +291,7 @@ class Router {
      * @param callable $method
 	 * @param int $priority
      */
-    public function addFilter ($filtername, callable $method = null, $priority = 0)
+    public function addFilter ($filtername, ?callable $method = null, $priority = 0)
     {
         $this->filters[$filtername] = [
         	'callback' => $method,

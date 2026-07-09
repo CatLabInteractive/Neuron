@@ -43,7 +43,7 @@ class Parser {
 
 	private $context;
 
-	public function __construct (Scanner $scanner, Context $context = null)
+	public function __construct (Scanner $scanner, ?Context $context = null)
 	{
 		$this->scanner = $scanner;
 		//$this->reset ();
@@ -455,7 +455,7 @@ class Parser {
 				return 3;
 				break;
 
-			case self::OP_NOT;
+			case self::OP_NOT:
 				return 5;
 				break;
 

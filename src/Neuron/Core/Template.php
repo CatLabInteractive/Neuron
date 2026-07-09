@@ -496,7 +496,7 @@ class Template
 	 * @param null $appurl
 	 * @return string
 	 */
-	private function getURL ($path, array $params = null, $normalize = true, $appurl = null) {
+	private function getURL ($path, ?array $params = null, $normalize = true, $appurl = null) {
 		return \Neuron\URLBuilder::getURL ($path, $params, $normalize, $appurl);
 	}
 

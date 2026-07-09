@@ -30,7 +30,7 @@ class ModelCollection
      * @param Model|null $model
      * @param null $offset
      */
-	protected function onAdd (Model $model = null, $offset = null)
+	protected function onAdd (?Model $model = null, $offset = null)
 	{
 	    if ($model) {
             $this->map[$model->getId ()] = $model;
@@ -41,7 +41,7 @@ class ModelCollection
      * @param Model|null $model
      * @param null $offset
      */
-	protected function onUnset (Model $model = null, $offset = null)
+	protected function onUnset (?Model $model = null, $offset = null)
 	{
 		if ($model) {
             unset ($this->map[$model->getId()]);

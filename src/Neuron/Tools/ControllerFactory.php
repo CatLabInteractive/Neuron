@@ -38,7 +38,7 @@ class ControllerFactory {
      * @return mixed
      * @throws DataNotFound
      */
-    public function getController ($name, Module $module = null)
+    public function getController ($name, ?Module $module = null)
     {
         if (!isset ($this->controllers[$name])) {
             if (class_exists ($name)) {

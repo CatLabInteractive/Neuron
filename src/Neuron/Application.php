@@ -167,7 +167,7 @@ class Application
 	 * @param Request $request
 	 * @throws DataNotSet
 	 */
-	public function dispatch (Request $request = null)
+	public function dispatch (?Request $request = null)
 	{
 		if ($this->isFirstDispatch) {
 			$this->isFirstDispatch = false;
