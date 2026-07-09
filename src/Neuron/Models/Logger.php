@@ -64,7 +64,7 @@ class Logger
 		$log = '';
 
 		$log .= str_pad ('[' . (number_format ($td, 3)) . '] ', 12, " ", STR_PAD_LEFT);
-		$log .= str_pad ('(' . (number_format ($tl ?? 0, 3)) . ') ', 10, " ", STR_PAD_LEFT);
+		$log .= str_pad ('(' . (number_format ($tl === null ? 0 : $tl, 3)) . ') ', 10, " ", STR_PAD_LEFT);
 		$log .= 'MEM: ' . str_pad (number_format ((memory_get_usage () / (1024 * 1024)), 3) . 'MB ', 10, " ", STR_PAD_LEFT);
 		$log .= "   " . $string;
 
