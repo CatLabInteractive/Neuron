@@ -41,6 +41,7 @@ class Collection
 	  * <p>
 	  * The return value will be casted to boolean if non-boolean was returned.
 	  */
+	 #[\ReturnTypeWillChange]
 	 public function offsetExists($offset)
 	 {
 		 return isset ($this->data[$offset]);
@@ -55,6 +56,7 @@ class Collection
 	  * </p>
 	  * @return mixed Can return all value types.
 	  */
+	 #[\ReturnTypeWillChange]
 	 public function offsetGet($offset)
 	 {
 		 return $this->data[$offset];
@@ -72,6 +74,7 @@ class Collection
 	  * </p>
 	  * @return void
 	  */
+	 #[\ReturnTypeWillChange]
 	 public function offsetSet($offset, $value)
 	 {
 		 if (is_null ($offset))
@@ -102,6 +105,7 @@ class Collection
 	  * </p>
 	  * @return void
 	  */
+	 #[\ReturnTypeWillChange]
 	 public function offsetUnset($offset)
 	 {
 		 $value = isset ($this->data[$offset]) ? $this->data[$offset] : null;
@@ -115,6 +119,7 @@ class Collection
 	 * @link http://php.net/manual/en/iterator.current.php
 	 * @return mixed Can return any type.
 	 */
+	#[\ReturnTypeWillChange]
 	public function current()
 	{
 		if (isset ($this->data[$this->position]))
@@ -130,6 +135,7 @@ class Collection
 	 * @link http://php.net/manual/en/iterator.next.php
 	 * @return mixed Any returned value is ignored.
 	 */
+	#[\ReturnTypeWillChange]
 	public function next()
 	{
 		++$this->position;
@@ -142,6 +148,7 @@ class Collection
 	 * @link http://php.net/manual/en/iterator.key.php
 	 * @return mixed scalar on success, or null on failure.
 	 */
+	#[\ReturnTypeWillChange]
 	public function key()
 	{
 		return $this->position;
@@ -154,6 +161,7 @@ class Collection
 	 * @return boolean The return value will be casted to boolean and then evaluated.
 	 * Returns true on success or false on failure.
 	 */
+	#[\ReturnTypeWillChange]
 	public function valid()
 	{
 		return isset($this->data[$this->position]);
@@ -165,6 +173,7 @@ class Collection
 	 * @link http://php.net/manual/en/iterator.rewind.php
 	 * @return void Any returned value is ignored.
 	 */
+	#[\ReturnTypeWillChange]
 	public function rewind()
 	{
 		$this->position = 0;
@@ -179,6 +188,7 @@ class Collection
 	 * <p>
 	 * The return value is cast to an integer.
 	 */
+	#[\ReturnTypeWillChange]
 	public function count()
 	{
 		return count ($this->data);

@@ -15,7 +15,7 @@ class Result implements Iterator, ArrayAccess, Countable
 	private $result;
 	
 	// iterator
-	private $rowId;
+	private $rowId = 0;
 	private $current;
 	
 	private $cache;
@@ -39,11 +39,13 @@ class Result implements Iterator, ArrayAccess, Countable
 	/**************************
 		ARRAY ACCESS
 	***************************/
+	#[\ReturnTypeWillChange]
 	public function offsetExists($offset)
 	{
 		return $offset >= 0 && $offset < $this->getNumRows ();
 	}
 	
+	#[\ReturnTypeWillChange]
 	public function offsetGet($offset)
 	{
 		// Only numeric values
@@ -63,11 +65,13 @@ class Result implements Iterator, ArrayAccess, Countable
 		return $this->cache[$offset];
 	}
 	
+	#[\ReturnTypeWillChange]
 	public function offsetUnset($offset)
 	{
 		// Doesn't do anything here.
 	}
 	
+	#[\ReturnTypeWillChange]
 	public function offsetSet($offset, $value)
 	{
 		// Doesn't do anything here.
@@ -77,16 +81,19 @@ class Result implements Iterator, ArrayAccess, Countable
 	/**************************
 		ITERATOR
 	***************************/
+	#[\ReturnTypeWillChange]
 	public function current()
 	{
 		return $this->current;
 	}
 	
+	#[\ReturnTypeWillChange]
 	public function key()
 	{
 		return $this->rowId;
 	}
 	
+	#[\ReturnTypeWillChange]
 	public function next()
 	{
 		$this->rowId ++;
@@ -95,6 +102,7 @@ class Result implements Iterator, ArrayAccess, Countable
 		return $this->current;
 	}
 	
+	#[\ReturnTypeWillChange]
 	public function rewind()
 	{
 		$this->rowId = 0;
@@ -102,6 +110,7 @@ class Result implements Iterator, ArrayAccess, Countable
 		$this->current = $this->result->fetch_assoc ();
 	}
 	
+	#[\ReturnTypeWillChange]
 	public function valid()
 	{
 		return is_array ($this->current ());
@@ -110,6 +119,7 @@ class Result implements Iterator, ArrayAccess, Countable
 	/**************************
 		COUNTABLE
 	***************************/
+	#[\ReturnTypeWillChange]
 	public function count ()
 	{
 		return $this->getNumRows ();

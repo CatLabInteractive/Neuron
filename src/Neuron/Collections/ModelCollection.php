@@ -33,7 +33,7 @@ class ModelCollection
 	protected function onAdd (?Model $model = null, $offset = null)
 	{
 	    if ($model) {
-            $this->map[$model->getId ()] = $model;
+            $this->map[$model->getId () ?? ''] = $model;
         }
 	}
 
@@ -44,7 +44,7 @@ class ModelCollection
 	protected function onUnset (?Model $model = null, $offset = null)
 	{
 		if ($model) {
-            unset ($this->map[$model->getId()]);
+            unset ($this->map[$model->getId() ?? '']);
         }
 	}
 
