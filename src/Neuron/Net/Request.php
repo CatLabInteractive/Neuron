@@ -481,7 +481,7 @@ class Request
 		{
 			$this->usercallbackcalled = true;
 
-			if (isset ($this->usercallback[$callbackName]))
+			if ($callbackName !== null && isset ($this->usercallback[$callbackName]))
 			{
 				$this->user = call_user_func ($this->usercallback[$callbackName], $this);
 			}
