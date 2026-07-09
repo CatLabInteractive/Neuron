@@ -181,6 +181,19 @@ class Response
 
 	private $output;
 
+	/** @var \Neuron\Net\Outputs\Output|null Global test/capture override */
+	private static $overrideOutput = null;
+
+	/**
+	 * Route all Response::output() calls through the provided Output
+	 * (used by integration test harnesses). Pass null to restore.
+	 * @param \Neuron\Net\Outputs\Output|null $output
+	 */
+	public static function overrideOutput (Output $output = null)
+	{
+		self::$overrideOutput = $output;
+	}
+
 	/**
 	 * Create a redirect response.
 	 * @param $url
@@ -256,6 +269,11 @@ class Response
 	 */
 	public function output ()
 	{
+		if (isset (self::$overrideOutput))
+		{
+			self::$overrideOutput->output ($this);
+			return;
+		}
 		$this->getOutput ()->output ($this);
 	}
 
