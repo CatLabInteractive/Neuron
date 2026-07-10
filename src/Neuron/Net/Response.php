@@ -189,7 +189,7 @@ class Response
 	 * (used by integration test harnesses). Pass null to restore.
 	 * @param \Neuron\Net\Outputs\Output|null $output
 	 */
-	public static function overrideOutput (Output $output = null)
+	public static function overrideOutput (?Output $output = null)
 	{
 		self::$overrideOutput = $output;
 	}
