@@ -38,15 +38,20 @@ class ResponseOverrideOutputTest extends TestCase
 
     public function testClearingOverrideRestoresNormalOutput()
     {
-        $capture = new CapturingTestOutput();
-        Response::overrideOutput($capture);
+        $override = new CapturingTestOutput();
+        Response::overrideOutput($override);
         Response::overrideOutput(null);
 
+        // Prove the static override no longer intercepts: with it cleared,
+        // output() must route to the response's own Output instance.
+        $instanceOutput = new CapturingTestOutput();
         $response = Response::json(array('hello' => 'world'));
-        ob_start();
-        $response->output();
-        $echoed = ob_get_clean();
+        $response->setOutput($instanceOutput);
 
-        $this->assertSame('{"hello":"world"}', $echoed);
+        $response->output();
+
+        $this->assertCount(0, $override->captured, 'cleared override must not intercept');
+        $this->assertCount(1, $instanceOutput->captured);
+        $this->assertSame($response, $instanceOutput->captured[0]);
     }
 }
