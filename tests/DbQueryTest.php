@@ -328,6 +328,50 @@ class DbQueryTest extends TestCase
 	}
 
 	/**
+	 * A null WHERE value must be turned into `IS NULL` WITHOUT routing the
+	 * value through substr() first. On PHP 8.5, substr(null, ...) emits
+	 * "Passing null to parameter #1 ($string) of type string is deprecated";
+	 * processWhere() used to call substr($value, 0, 1) to sniff for a '!'
+	 * comparator prefix before it reached the null -> IS NULL branch, firing
+	 * that deprecation once per null value (observed as a ~50x burst on the
+	 * shop-claim path in api.quizwitz.com, where OptionMapper queried options
+	 * for not-yet-persisted questions whose id was null).
+	 *
+	 * @test
+	 */
+	public function testNullWhereValueDoesNotEmitDeprecation()
+	{
+		$deprecations = array();
+		set_error_handler(function ($errno, $errstr) use (&$deprecations) {
+			$deprecations[] = $errstr;
+			return true;
+		}, E_DEPRECATED | E_USER_DEPRECATED);
+
+		try {
+			$query = Query::select(
+				'tableName',
+				array('id'),
+				array(
+					'id' => 1,
+					'deleted_at' => null
+				)
+			)->getParsedQuery();
+		} finally {
+			restore_error_handler();
+		}
+
+		$this->assertSame(
+			'SELECT id FROM `tableName` WHERE id = 1 AND deleted_at IS NULL',
+			$query
+		);
+		$this->assertSame(
+			array(),
+			$deprecations,
+			'Building a WHERE with a null value must not emit any deprecation.'
+		);
+	}
+
+	/**
 	 * @test
 	 */
 	public function testNullInsert()

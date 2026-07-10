@@ -137,8 +137,13 @@ class Query
 					$tmp = array($v, self::PARAM_UNKNOWN);
 				}
 
-                // Parse comparators
-				if (!is_array($tmp[0]) && substr($tmp[0], 0, 1) === '!') {
+                // Parse comparators. Guard null before substr(): a null WHERE
+                // value has no '!'/comparator prefix and is handled by the
+                // `$tmp[0] === null` -> `IS NULL` branch below; calling
+                // substr(null, ...) here would emit a PHP 8.5 deprecation
+                // ("Passing null to parameter #1 ($string)") for every null
+                // value before that branch is ever reached.
+				if ($tmp[0] !== null && !is_array($tmp[0]) && substr($tmp[0], 0, 1) === '!') {
 					$query .= $k . ' != ? AND ';
 					$tmp[0] = substr($tmp[0], 1);
 				} elseif (isset($tmp[2]) && strtoupper($tmp[2]) === 'LIKE') {
