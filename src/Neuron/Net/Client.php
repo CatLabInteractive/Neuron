@@ -166,7 +166,6 @@ class Client
 		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
 		$response = Response::fromRaw($body, self::http_parse_headers($header));
-		curl_close($ch);
 
 		$response->setStatus($status);
 
