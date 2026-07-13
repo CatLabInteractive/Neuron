@@ -185,11 +185,18 @@ class Tools
      */
     public static function isValidUTF8 ($str)
     {
-        return (bool) preg_match('//u', $str);
+        // Cast: preg_match(null) is deprecated on PHP 8.1+. null coerced
+        // to '' before 8.1, and '' is valid UTF-8, so behaviour is kept.
+        return (bool) preg_match('//u', (string) $str);
     }
 
 	public static function isValidBase64 ($str)
 	{
+		// base64_decode(null) is deprecated on PHP 8.1+; null was never
+		// valid base64 here (strict === against the original value).
+		if ($str === null) {
+			return false;
+		}
 		return base64_encode(base64_decode($str, true)) === $str;
 	}
 
