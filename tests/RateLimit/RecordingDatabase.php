@@ -8,13 +8,15 @@ use Neuron\Tests\TestDatabase;
  * Records every query passed to query() and stubs getAffectedRows().
  *
  * TestDatabase::query() is declared `query ($sSQL): int` (no $log
- * parameter), so this override must keep that exact signature. That
- * also means it can only ever return an int: DatabaseStore's queries
- * (INSERT IGNORE / UPDATE / DELETE) don't need anything else, since
+ * parameter), so this override must keep that exact signature. It
+ * records the SQL for every statement (SELECT included) regardless of
+ * type, but can only ever return an int: DatabaseStore's INSERT IGNORE /
+ * UPDATE / DELETE queries don't need anything else, since
  * DatabaseStore::attempt() reads the outcome from getAffectedRows(),
- * not from query()'s return value. A SELECT (as used by
- * DatabaseStore::hits()) can't have its row data carried back through
- * this int-typed override; hits() is not covered by this double.
+ * not from query()'s return value. A SELECT's row data can't be carried
+ * back through this int-typed override, so tests against a SELECT (see
+ * DatabaseStore::hits()) can only assert the recorded SQL shape, not a
+ * returned result.
  */
 class RecordingDatabase extends TestDatabase
 {

@@ -65,4 +65,19 @@ class RateLimitDatabaseStoreTest extends TestCase
 		(new DatabaseStore ())->cleanup (5000);
 		$this->assertSame ('DELETE FROM neuron_rate_limits WHERE window_start < 5000', $this->db->queries[0]);
 	}
+
+	/**
+	 * RecordingDatabase can't carry row data back through query()'s
+	 * `int` return type (see its docblock), so this only asserts the
+	 * SQL shape hits() sends; it always sees an empty result and
+	 * returns 0.
+	 */
+	public function testHitsSelectsTheWindowRow ()
+	{
+		$this->assertSame (0, (new DatabaseStore ())->hits ('user:1', 9960));
+		$this->assertSame (
+			"SELECT hits FROM neuron_rate_limits WHERE rl_key = 'user:1' AND window_start = 9960",
+			$this->db->queries[0]
+		);
+	}
 }

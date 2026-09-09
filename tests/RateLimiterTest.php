@@ -23,6 +23,12 @@ class RateLimiterTest extends TestCase
 		$this->assertSame (7200, RateLimiter::windowStart (3600, 7200));
 	}
 
+	public function testWindowBelowOneSecondIsRejected ()
+	{
+		$this->expectException (InvalidParameter::class);
+		RateLimiter::windowStart (0, 1000);
+	}
+
 	public function testAttemptsUpToMaxAreAllowedThenRefused ()
 	{
 		$store = new ArrayStore ();
