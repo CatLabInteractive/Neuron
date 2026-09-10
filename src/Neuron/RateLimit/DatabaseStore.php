@@ -4,6 +4,7 @@ namespace Neuron\RateLimit;
 
 use Neuron\DB\Database;
 use Neuron\DB\Query;
+use Neuron\Exceptions\InvalidParameter;
 
 /**
  * MySQL-backed Store. Expected table (see README, "Rate limiting"):
@@ -22,17 +23,20 @@ class DatabaseStore implements Store
 
 	public function __construct (string $table = 'neuron_rate_limits')
 	{
+		if (!preg_match ('/^[A-Za-z0-9_]+$/', $table)) {
+			throw new InvalidParameter ('table must match /^[A-Za-z0-9_]+$/');
+		}
 		$this->table = $table;
 	}
 
 	public function attempt (string $key, int $windowStart, int $max, int $cost): bool
 	{
-		$insert = new Query ("INSERT IGNORE INTO {$this->table} (rl_key, window_start, hits) VALUES (?, ?, 0)");
+		$insert = new Query ("INSERT IGNORE INTO `{$this->table}` (rl_key, window_start, hits) VALUES (?, ?, 0)");
 		$insert->bindValue (1, $key, Query::PARAM_STR);
 		$insert->bindValue (2, $windowStart, Query::PARAM_NUMBER);
 		$insert->execute ();
 
-		$update = new Query ("UPDATE {$this->table} SET hits = hits + ? WHERE rl_key = ? AND window_start = ? AND hits + ? <= ?");
+		$update = new Query ("UPDATE `{$this->table}` SET hits = hits + ? WHERE rl_key = ? AND window_start = ? AND hits + ? <= ?");
 		$update->bindValue (1, $cost, Query::PARAM_NUMBER);
 		$update->bindValue (2, $key, Query::PARAM_STR);
 		$update->bindValue (3, $windowStart, Query::PARAM_NUMBER);
@@ -45,7 +49,7 @@ class DatabaseStore implements Store
 
 	public function hits (string $key, int $windowStart): int
 	{
-		$query = new Query ("SELECT hits FROM {$this->table} WHERE rl_key = ? AND window_start = ?");
+		$query = new Query ("SELECT hits FROM `{$this->table}` WHERE rl_key = ? AND window_start = ?");
 		$query->bindValue (1, $key, Query::PARAM_STR);
 		$query->bindValue (2, $windowStart, Query::PARAM_NUMBER);
 		$result = $query->execute ();
@@ -57,7 +61,7 @@ class DatabaseStore implements Store
 
 	public function cleanup (int $olderThanWindowStart): void
 	{
-		$query = new Query ("DELETE FROM {$this->table} WHERE window_start < ?");
+		$query = new Query ("DELETE FROM `{$this->table}` WHERE window_start < ?");
 		$query->bindValue (1, $olderThanWindowStart, Query::PARAM_NUMBER);
 		$query->execute ();
 	}

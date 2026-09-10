@@ -15,6 +15,11 @@ interface Store
 	 */
 	public function attempt (string $key, int $windowStart, int $max, int $cost): bool;
 
+	/**
+	 * Hits recorded for ($key, $windowStart) so far, or 0 when no row
+	 * exists for it yet. This is a non-atomic read: it may be stale
+	 * relative to a concurrent attempt() racing the same window.
+	 */
 	public function hits (string $key, int $windowStart): int;
 
 	/**
