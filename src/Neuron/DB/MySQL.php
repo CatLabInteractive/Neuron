@@ -72,24 +72,37 @@ class MySQL extends Database
 		// Increase the counter
 		$this->query_counter ++;
 
-		$result = $this->connection->multi_query (trim ($sSQL));
+		try
+		{
+			$result = $this->connection->multi_query (trim ($sSQL));
 
-		// FLUSH RESULTS
-		// @TODO make these usable
-		do  {
-			$r = $this->connection->store_result ();
-			if ($r)
+			// FLUSH RESULTS
+			// @TODO make these usable
+			do  {
+				$r = $this->connection->store_result ();
+				if ($r)
+				{
+					$r->free ();
+				}
+
+				if (!$this->connection->more_results ())
+				{
+					break;
+				}
+
+				//$this->connection->next_result();
+			} while ($this->connection->next_result ());
+
+			// A failing later statement only shows up as next_result() === false.
+			if ($result && $this->connection->errno)
 			{
-				$r->free ();
+				$result = false;
 			}
-
-			if (!$this->connection->more_results ())
-			{
-				break;
-			}
-
-			//$this->connection->next_result();
-		} while ($this->connection->next_result ());
+		}
+		catch (\mysqli_sql_exception $e)
+		{
+			throw DbException::fromMysqliException ($e, $sSQL);
+		}
 
 		$duration = microtime (true) - $start;
 		$this->addQueryLog ($sSQL, $duration);
@@ -103,6 +116,7 @@ class MySQL extends Database
 
 			//echo $sSQL;
 			$ex = new DbException ('MySQL Error: '.$this->connection->error);
+			$ex->setErrorCode ($this->connection->errno);
 			$ex->setQuery ($sSQL);
 
 			throw $ex;
@@ -140,7 +154,12 @@ class MySQL extends Database
 		// Increase the counter
 		$this->query_counter ++;
 		
-		$result = $this->connection->query (trim ($sSQL));
+		try {
+			$result = $this->connection->query (trim ($sSQL));
+		} catch (\mysqli_sql_exception $e) {
+			// PHP 8.1+ mysqli throws itself (MYSQLI_REPORT_STRICT is the default).
+			throw DbException::fromMysqliException ($e, $sSQL);
+		}
 		
 		$duration = microtime (true) - $start;
 
@@ -149,8 +168,10 @@ class MySQL extends Database
 		}
 		
 		if (!$result) {
-			throw (new DbException ('MySQL Error: '.$this->connection->error))
+			$ex = (new DbException ('MySQL Error: '.$this->connection->error))
 				->setErrorCode($this->connection->errno);
+			$ex->setQuery ($sSQL);
+			throw $ex;
 		} elseif ($result instanceof MySQLi_Result) {
 			return new Result ($result);
 		}
