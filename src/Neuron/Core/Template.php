@@ -311,7 +311,14 @@ class Template
 			}
 		}
 
-		include $ctlbtmpltfiles[0];
+		try {
+			include $ctlbtmpltfiles[0];
+		} catch (\Throwable $ctlbtmplterror) {
+			// Close our buffer before rethrowing, or it stays open and
+			// swallows everything the caller outputs afterwards.
+			ob_end_clean ();
+			throw $ctlbtmplterror;
+		}
 
 		$val = ob_get_contents();
 
@@ -384,10 +391,15 @@ class Template
 			${$k} = $v;
 		}
 
-		if ($ctlbtmpltfiles = $this->getFilenames($template, true)) {
-			foreach ($ctlbtmpltfiles as $ctlbtmpltfile) {
-				include $ctlbtmpltfile;
+		try {
+			if ($ctlbtmpltfiles = $this->getFilenames($template, true)) {
+				foreach ($ctlbtmpltfiles as $ctlbtmpltfile) {
+					include $ctlbtmpltfile;
+				}
 			}
+		} catch (\Throwable $ctlbtmplterror) {
+			ob_end_clean();
+			throw $ctlbtmplterror;
 		}
 
 		$val = ob_get_contents();
@@ -418,10 +430,15 @@ class Template
 			${$k} = $v;
 		}
 
-		if ($ctlbtmpltfiles = $this->getFilenames($template)) {
-			foreach ($ctlbtmpltfiles as $ctlbtmpltfile) {
-				include $ctlbtmpltfile;
+		try {
+			if ($ctlbtmpltfiles = $this->getFilenames($template)) {
+				foreach ($ctlbtmpltfiles as $ctlbtmpltfile) {
+					include $ctlbtmpltfile;
+				}
 			}
+		} catch (\Throwable $ctlbtmplterror) {
+			ob_end_clean();
+			throw $ctlbtmplterror;
 		}
 
 		$val = ob_get_contents();
