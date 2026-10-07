@@ -904,4 +904,54 @@ $sql = $query->getParsedQuery ();
 // All dangerous single quotes must be escaped
 $this->assertGreaterThanOrEqual (3, substr_count ($sql, "\\'"));
 }
+
+// ---------------------------------------------------------------
+// Values are substituted in one pass
+// ---------------------------------------------------------------
+
+public function testValueContainingOldMarkerOfLaterValueStaysLiteral ()
+{
+$query = new Query ("SELECT * FROM t WHERE a = ? AND b = ?");
+$query->bindValue (1, 'x {{{ctlb-custom-placeholder-1}}} y', Query::PARAM_STR);
+$query->bindValue (2, 'second', Query::PARAM_STR);
+$sql = $query->getParsedQuery ();
+
+$this->assertSame (
+"SELECT * FROM t WHERE a = 'x {{{ctlb-custom-placeholder-1}}} y' AND b = 'second'",
+$sql
+);
+}
+
+public function testBuilderValueContainingOldMarkerStaysLiteral ()
+{
+$sql = Query::select ('t', array (), array (
+'a' => array ('{{{ctlb-custom-placeholder-1}}}', Query::PARAM_STR),
+'b' => array ('second', Query::PARAM_STR),
+))->getParsedQuery ();
+
+$this->assertSame (
+"SELECT * FROM `t` WHERE a = '{{{ctlb-custom-placeholder-1}}}' AND b = 'second'",
+$sql
+);
+}
+
+public function testLaterValueIsNeverSubstitutedIntoEarlierValue ()
+{
+$query = new Query ("SELECT * FROM t WHERE a = :a AND b = :b");
+$query->bindValue ('a', '{{{ctlb-custom-placeholder-b}}}', Query::PARAM_STR);
+$query->bindValue ('b', 'second', Query::PARAM_STR);
+$sql = $query->getParsedQuery ();
+
+$this->assertSame (1, substr_count ($sql, "'second'"));
+$this->assertStringContainsString ("a = '{{{ctlb-custom-placeholder-b}}}'", $sql);
+}
+
+public function testMarkersDifferBetweenQueries ()
+{
+$reflection = new \ReflectionClass (Query::class);
+$source = file_get_contents ($reflection->getFileName ());
+
+$this->assertStringContainsString ('random_bytes', $source);
+$this->assertStringNotContainsString ("'{{{ctlb-custom-placeholder-'", $source);
+}
 }
