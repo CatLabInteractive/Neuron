@@ -65,3 +65,27 @@ A few contract details worth knowing:
 - **`window_start` is an unsigned 32-bit epoch bucket** (seconds since
   the epoch, rounded down to a window boundary), matching the column's
   `int unsigned` type above.
+
+Sessions
+--------
+Routes with the `session` filter start a session through the
+application's session handler (`Neuron\SessionHandlers\SessionHandler`,
+which wraps PHP's own save handler, or `DbSessionHandler`, which stores
+sessions in a `sessions` table).
+
+- **Session ids are validated.** A request may only bring an id in the
+  format PHP generates (22 to 256 characters out of `A-Za-z0-9,-`) that
+  has a stored session. Any other id is ignored and the request gets a
+  new session. The handlers switch on `session.use_strict_mode` when a
+  session starts. `SessionHandler` can only check for a stored session
+  when PHP's save handler is `files`.
+- **The `PSID` query parameter is opt-in.** A session id in the query
+  string is only read after
+  `\Neuron\SessionHandlers\SessionHandler::setQueryParameterEnabled (true);`
+  and only when the request has no (valid) session cookie.
+- **Sessions expire after `session.gc_maxlifetime` seconds without a
+  request** (`DbSessionHandler`). An older row is treated as absent and
+  removed when it is read; garbage collection uses the same lifetime.
+  Set `session.gc_maxlifetime` before the session starts.
+- **`$request->getSession ()->regenerate ()`** gives the session a new
+  id and keeps its data. Call it when a user logs in.

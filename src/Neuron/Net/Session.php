@@ -41,6 +41,29 @@ class Session
 	}
 
 	/**
+	 * Give the active session a new id and remove the stored session of
+	 * the old one. The session data is kept. Call this whenever the
+	 * privileges of the session change, for example when a user logs in.
+	 * Does nothing when no session is active, or when the new session
+	 * cookie could not be sent any more.
+	 * @return bool True if the session has a new id.
+	 */
+	public function regenerate ()
+	{
+		if (session_status () !== PHP_SESSION_ACTIVE)
+		{
+			return false;
+		}
+
+		if (headers_sent () && ini_get ('session.use_cookies'))
+		{
+			return false;
+		}
+
+		return session_regenerate_id (true);
+	}
+
+	/**
 	 * Destroy a session
 	 */
 	public function destroy ()

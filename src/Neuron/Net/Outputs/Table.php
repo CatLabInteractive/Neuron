@@ -20,7 +20,9 @@ class Table extends HTML {
 
 	private function printTable ($data, $var_dump = true)
 	{
-		header ('Content-type: text/html, charset=utf-8');
+		if (!headers_sent ()) {
+			header ('Content-type: text/html; charset=utf-8');
+		}
 
 		echo '<html>';
 		echo '<head>';
@@ -51,7 +53,7 @@ class Table extends HTML {
 			{
 				echo '<tr>';
 
-				echo '<th>' . $k . '</th>';
+				echo '<th>' . self::escape ($k) . '</th>';
 				echo '<td>';
 
 				if ($k === 'debug')
@@ -71,15 +73,28 @@ class Table extends HTML {
 		}
 		else
 		{
+			// The table is a view on data: every key and value is text and
+			// is escaped, whatever it contains.
 			if ($var_dump)
 			{
+				ob_start ();
 				var_dump ($data);
+				echo self::escape (ob_get_clean ());
 			}
 			else
 			{
-				echo $data;
+				echo self::escape (is_scalar ($data) || $data === null ? (string) $data : print_r ($data, true));
 			}
 		}
+	}
+
+	/**
+	 * @param mixed $text
+	 * @return string
+	 */
+	private static function escape ($text)
+	{
+		return htmlspecialchars ((string) $text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 	}
 
 	public function outputContent (Response $response)
@@ -91,7 +106,7 @@ class Table extends HTML {
 
 		else
 		{
-			echo $response->getData ();
+			echo self::escape ($response->getData ());
 		}
 	}
 	

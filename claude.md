@@ -36,6 +36,9 @@ The primary input validation layer. All user input should be validated through `
 ### Database Queries (`src/Neuron/DB/Query.php`)
 Always use parameterized queries via the `Query` class to prevent SQL injection. Never concatenate user input directly into SQL strings.
 
+### Query log and connection errors (`src/Neuron/DB/Database.php`, `MySQL.php`)
+The query log (`getAllQueries()`, `getLastQuery()`) is opt-in: call `Database::setQueryLogEnabled(true)` where the application shows it; it keeps the most recent `Database::QUERY_LOG_LIMIT` (5000) statements. `getQueryCounter()` and `getOriginCounters()` work either way. A connection failure throws a `DbException` with the fixed message `DbException::CONNECTION_FAILED` (`isConnectionError()`); the driver's error is the previous exception, for logging only.
+
 ### Testing
 Tests are located in `tests/` and use PHPUnit. Database-dependent tests are grouped with `#[Group('database')]` and require a MySQL connection. CI runs tests excluding this group.
 

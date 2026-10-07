@@ -1,0 +1,1 @@
+[<?php echo is_array ($$name) ? implode (",", $$name) : $$name; ?>]

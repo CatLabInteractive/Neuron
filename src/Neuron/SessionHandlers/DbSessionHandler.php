@@ -16,7 +16,39 @@ class DbSessionHandler
 {
 	/** @var Database $db */
 	private $db;
+
+	/** @var array Session data by id; null for an id without a (live) session. */
 	private $sessions = array ();
+
+	/**
+	 * Has a session that was last written at $setTime outlived its lifetime?
+	 * @param int|string $setTime Unix timestamp of the last write.
+	 * @param int $now
+	 * @param int $maxLifetime In seconds.
+	 * @return bool
+	 */
+	public static function isExpired ($setTime, $now, $maxLifetime)
+	{
+		return (int) $setTime < (int) $now - (int) $maxLifetime;
+	}
+
+	/**
+	 * Seconds a session may go without being written before it expires:
+	 * session.gc_maxlifetime.
+	 * @return int
+	 */
+	protected function getMaxLifetime ()
+	{
+		return (int) ini_get ('session.gc_maxlifetime');
+	}
+
+	/**
+	 * @return int
+	 */
+	protected function now ()
+	{
+		return time ();
+	}
 
 	/* Methods */
 	#[\ReturnTypeWillChange]
@@ -39,33 +71,72 @@ class DbSessionHandler
 	#[\ReturnTypeWillChange]
 	public function destroy ( $session_id )
 	{
-		Query::delete ('sessions', array ('id' => $session_id))->execute ();
+		Query::delete ('sessions', array ('id' => array ($session_id, Query::PARAM_STR)))->execute ();
+		$this->sessions[$session_id] = null;
+
 		return true;
 	}
 
 	#[\ReturnTypeWillChange]
 	public function gc ( $maxlifetime )
 	{
-		Query::delete ('sessions', array ('set_time' => array (time () - 60 * 10, Query::PARAM_NUMBER, '<')))->execute ();
+		Query::delete ('sessions', array ('set_time' => array ($this->now () - (int) $maxlifetime, Query::PARAM_NUMBER, '<')))->execute ();
 		return true;
 	}
 
 	#[\ReturnTypeWillChange]
 	public function read ( $session_id )
 	{
-		if (!isset ($this->sessions[$session_id]))
+		$data = $this->load ($session_id);
+		return $data === null ? '' : $data;
+	}
+
+	/**
+	 * The data of a stored session that has not expired, or null. A row
+	 * that outlived the lifetime is removed.
+	 * @param string $session_id
+	 * @return string|null
+	 */
+	private function load ($session_id)
+	{
+		if (!self::isValidSessionId ($session_id))
 		{
-			$data = Query::select ('sessions', array ('data'), array ('id' => $session_id))->execute ();
-			if (count ($data) > 0)
+			return null;
+		}
+
+		if (!array_key_exists ($session_id, $this->sessions))
+		{
+			$this->sessions[$session_id] = null;
+
+			$rows = Query::select (
+				'sessions',
+				array ('data', 'set_time'),
+				array ('id' => array ($session_id, Query::PARAM_STR))
+			)->execute ();
+
+			if (count ($rows) > 0)
 			{
-				$this->sessions[$session_id] = $data[0]['data'];
-			}
-			else
-			{
-				$this->sessions[$session_id] = '';
+				if (self::isExpired ($rows[0]['set_time'], $this->now (), $this->getMaxLifetime ()))
+				{
+					$this->destroy ($session_id);
+				}
+				else
+				{
+					$this->sessions[$session_id] = (string) $rows[0]['data'];
+				}
 			}
 		}
+
 		return $this->sessions[$session_id];
+	}
+
+	/**
+	 * @param string $session_id
+	 * @return bool
+	 */
+	protected function sessionExists ($session_id)
+	{
+		return $this->load ($session_id) !== null;
 	}
 
 	#[\ReturnTypeWillChange]
@@ -73,7 +144,7 @@ class DbSessionHandler
 	{
 		$this->sessions[$session_id] = $session_data;
 		
-		$time = time ();
+		$time = $this->now ();
 		$this->db->query 
 		("
 			REPLACE 

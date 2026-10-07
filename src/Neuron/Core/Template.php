@@ -223,6 +223,10 @@ class Template
 	{
 		$out = array ();
 
+		if (!self::isSafeName ($template)) {
+			return false;
+		}
+
 		foreach (self::getPaths () as $v) {
 
 			// Split prefix and folder
@@ -265,6 +269,88 @@ class Template
 		return false;
 	}
 
+	/**
+	 * A template name is a path relative to the template folders. Names that
+	 * are absolute, that contain a parent directory segment or that contain a
+	 * NUL byte are never looked up.
+	 * @param $template
+	 * @return bool
+	 */
+	private static function isSafeName ($template)
+	{
+		$template = (string) $template;
+
+		if (strpos ($template, "\0") !== false) {
+			return false;
+		}
+
+		// Absolute: leading (back)slash or a drive letter.
+		if (preg_match ('#^(?:[/\\\\]|[A-Za-z]:[/\\\\])#', $template)) {
+			return false;
+		}
+
+		return !in_array ('..', preg_split ('#[/\\\\]#', $template), true);
+	}
+
+	/**
+	 * Escape a string for output in HTML, text or attribute value.
+	 * @param string $value
+	 * @return string
+	 */
+	private static function escape ($value)
+	{
+		return htmlentities ($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+	}
+
+	/**
+	 * The variables a template gets, for a page and for a partial alike:
+	 * the shared variables, then the variables of this template. A string
+	 * is escaped unless it was set with setRaw(); its original is available
+	 * as $_name_.
+	 * Partial parameters come last and are passed on as given: they are
+	 * values of the calling template, which already got its own variables
+	 * escaped.
+	 * @param array $parameters
+	 * @return array
+	 */
+	private function getTemplateVariables ($parameters = array ())
+	{
+		$out = array ();
+
+		foreach (array (self::$shares, $this->values) as $variables) {
+			foreach ($variables as $k => $v) {
+				if (is_string ($v) && !$this->isRaw ($k)) {
+					$out[$k] = self::escape ($v);
+					$out['_' . $k . '_'] = $v;
+				} else {
+					$out[$k] = $v;
+				}
+			}
+		}
+
+		foreach ($parameters as $k => $v) {
+			$out[$k] = $v;
+		}
+
+		// $this is the template itself, never a variable.
+		unset ($out['this']);
+
+		return $out;
+	}
+
+	/**
+	 * Include a template file in a scope of its own.
+	 * Takes the filename and the variables. It declares no parameters and no
+	 * local variables on purpose: this scope becomes the scope of the template,
+	 * so whatever the variables are called, there is nothing in here they
+	 * could replace.
+	 */
+	private function includeTemplate ()
+	{
+		extract (func_get_arg (1), EXTR_SKIP);
+		include func_get_arg (0);
+	}
+
 	public static function hasTemplate ($template)
 	{
 		return self::getFilenames ($template) ? true : false;
@@ -286,33 +372,14 @@ class Template
 		if (! $ctlbtmpltfiles = $this->getFilenames ($template))
 		{
 			$out = '<h1>Template not found</h1>';
-			$out .= '<p>The system could not find template "'.$template.'"</p>';
+			$out .= '<p>The system could not find template "' . self::escape ((string) $template) . '"</p>';
 			return $out;
 		}
 
 		ob_start ();
 
-		foreach (self::$shares as $k => $v)
-		{
-			if (is_string($v) && !$this->isRaw($k)) {
-				${$k} = htmlentities($v);
-				${'_' . $k . '_'} = $v;
-			} else {
-				${$k} = $v;
-			}
-		}
-
-		foreach ($this->values as $k => $v) {
-			if (is_string($v) && !$this->isRaw($k)) {
-				${$k} = htmlentities($v);
-				${'_' . $k . '_'} = $v;
-			} else {
-				${$k} = $v;
-			}
-		}
-
 		try {
-			include $ctlbtmpltfiles[0];
+			$this->includeTemplate ($ctlbtmpltfiles[0], $this->getTemplateVariables ());
 		} catch (\Throwable $ctlbtmplterror) {
 			// Close our buffer before rethrowing, or it stays open and
 			// swallows everything the caller outputs afterwards.
@@ -379,22 +446,12 @@ class Template
 	{
 		ob_start();
 
-		foreach (self::$shares as $k => $v) {
-			${$k} = $v;
-		}
-
-		foreach ($this->values as $k => $v) {
-			${$k} = $v;
-		}
-
-		foreach ($parameters as $k => $v) {
-			${$k} = $v;
-		}
+		$ctlbtmpltvars = $this->getTemplateVariables ($parameters);
 
 		try {
 			if ($ctlbtmpltfiles = $this->getFilenames($template, true)) {
 				foreach ($ctlbtmpltfiles as $ctlbtmpltfile) {
-					include $ctlbtmpltfile;
+					$this->includeTemplate ($ctlbtmpltfile, $ctlbtmpltvars);
 				}
 			}
 		} catch (\Throwable $ctlbtmplterror) {
@@ -418,22 +475,12 @@ class Template
 	{
 		ob_start();
 
-		foreach (self::$shares as $k => $v) {
-			${$k} = $v;
-		}
-
-		foreach ($this->values as $k => $v) {
-			${$k} = $v;
-		}
-
-		foreach ($parameters as $k => $v) {
-			${$k} = $v;
-		}
+		$ctlbtmpltvars = $this->getTemplateVariables ($parameters);
 
 		try {
 			if ($ctlbtmpltfiles = $this->getFilenames($template)) {
 				foreach ($ctlbtmpltfiles as $ctlbtmpltfile) {
-					include $ctlbtmpltfile;
+					$this->includeTemplate ($ctlbtmpltfile, $ctlbtmpltvars);
 				}
 			}
 		} catch (\Throwable $ctlbtmplterror) {

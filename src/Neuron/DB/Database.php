@@ -10,6 +10,12 @@ abstract class Database
 	protected $affected_rows = 0;
 	protected $query_counter = 0;
 
+	/** The query log keeps at most this many statements (the most recent). */
+	const QUERY_LOG_LIMIT = 5000;
+
+	/** @var bool See setQueryLogEnabled (). */
+	private static $queryLogEnabled = false;
+
 	protected $query_log = array ();
 
 	protected $origin_counter = array ();
@@ -125,7 +131,7 @@ abstract class Database
 	}
 
 	/**
-	 * Just put a comment in the query log.
+	 * Just put a comment in the query log (when it is enabled).
 	 * Does not connect to database.
 	 * @param $txt
 	 */
@@ -134,46 +140,51 @@ abstract class Database
 		$this->addQueryLog ("/* " . $txt . " */");
 	}
 
+	/**
+	 * Keep the executed statements (with their bound values) in memory, so
+	 * getAllQueries () and getLastQuery () can return them. Off by default:
+	 * turn it on only where the application shows or inspects the log.
+	 * Applies to every Database instance.
+	 * @param bool $enabled
+	 */
+	public static function setQueryLogEnabled ($enabled)
+	{
+		self::$queryLogEnabled = (bool) $enabled;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public static function isQueryLogEnabled ()
+	{
+		return self::$queryLogEnabled;
+	}
+
 	protected function addQueryLog ($sSQL, $duration = null)
 	{
-		/*
-		if (! (defined ('DEBUG') && DEBUG) && !isset ($_GET['debug']))
-		{
-			return;
-		}
-		*/
-
-		if (count ($this->query_log) > 5000)
-		{
-			array_shift ($this->query_log);
-		}
-
-		$stacktrace = debug_backtrace ();
+		$stacktrace = debug_backtrace (DEBUG_BACKTRACE_IGNORE_ARGS, 3);
 		$origin = $stacktrace[1];
-
-		//var_dump ($stacktrace[2]);
 
 		if (isset ($stacktrace[2]['class']) && $stacktrace[2]['class'] == 'Neuron\DB\Query')
 		{
 			$origin = $stacktrace[2];
 		}
 
-		$txt = '[' . number_format ($duration, 3) . ' s] ';
-		//$txt .= $origin['class'] . ' ';
-
-		// QUery took longer than 1 second?
-		/*
-		if ($duration > 0.1)
+		// The origin counters hold no statement text, so they are always kept.
+		if (isset ($origin['file']))
 		{
-			$txt = '<span style="color: red; font-weight: bold;">' . $txt . '</span>';
+			$this->increaseOriginCounter ($origin['file'], $origin['line']);
 		}
-		*/
 
+		if (!self::$queryLogEnabled && !isset ($this->logger))
+		{
+			return;
+		}
+
+		$txt = '[' . number_format ((float) $duration, 3) . ' s] ';
 		$txt .= trim ($sSQL);
 
-		$this->increaseOriginCounter ($origin['file'], $origin['line']);
-		//$txt .= '<br />' . $origin['file'] . ':' . $origin['line'];
-
+		// A logger is a sink the application set itself; it is not gated.
 		if (isset ($this->logger))
 		{
 			$color = 'green';
@@ -185,14 +196,33 @@ abstract class Database
 			$this->logger->log ('DB: ' . preg_replace('!\s+!', ' ', str_replace ("\t", " ", str_replace ("\n", "", $txt))), false, $color);
 		}
 
+		if (!self::$queryLogEnabled)
+		{
+			return;
+		}
+
 		$this->query_log[] = $txt;
+
+		if (count ($this->query_log) > self::QUERY_LOG_LIMIT)
+		{
+			array_shift ($this->query_log);
+		}
 	}
 
+	/**
+	 * @return string|null The most recent logged statement, null when the
+	 * query log is off or empty.
+	 */
 	public function getLastQuery ()
 	{
-		return $this->query_log[count ($this->query_log) - 1];
+		$count = count ($this->query_log);
+		return $count > 0 ? $this->query_log[$count - 1] : null;
 	}
 
+	/**
+	 * @return string[] The logged statements; empty unless the query log was
+	 * turned on with setQueryLogEnabled (true).
+	 */
 	public function getAllQueries ()
 	{
 		return $this->query_log;

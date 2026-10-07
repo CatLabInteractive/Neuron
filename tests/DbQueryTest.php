@@ -237,7 +237,7 @@ class DbQueryTest extends TestCase
 		// Insert
 		$query = Query::insert ('table', $values);
 
-		$expected = "INSERT INTO `table` SET m_id = 1, m_test = 'test string with a random ? in it.', m_next = 'another parameter'";
+		$expected = "INSERT INTO `table` SET m_id = '1', m_test = 'test string with a random ? in it.', m_next = 'another parameter'";
 
 		$this->assertEquals ($expected, $query->getParsedQuery ());
 	}
@@ -254,7 +254,7 @@ class DbQueryTest extends TestCase
 		$query->bindValue ('m_next', 'another parameter');
 		$query->bindValue ('m_id', 1);
 
-		$expected = "INSERT INTO `table` SET m_id = 1, m_test = 'test string with a random :m_next parameter in it.', m_next = 'another parameter'";
+		$expected = "INSERT INTO `table` SET m_id = '1', m_test = 'test string with a random :m_next parameter in it.', m_next = 'another parameter'";
 
 		$this->assertEquals ($expected, $query->getParsedQuery ());
 	}
@@ -271,7 +271,7 @@ class DbQueryTest extends TestCase
 		$query->bindValue (2, 'another parameter');
 		$query->bindValue ('m_id', 1);
 
-		$expected = "INSERT INTO `table` SET m_id = 1, m_test = 'test string with a random :m_next parameter in it.', m_next = 'another parameter'";
+		$expected = "INSERT INTO `table` SET m_id = '1', m_test = 'test string with a random :m_next parameter in it.', m_next = 'another parameter'";
 
 		$this->assertEquals ($expected, $query->getParsedQuery ());
 	}
@@ -285,7 +285,7 @@ class DbQueryTest extends TestCase
 		$query->bindValue ('m_test', 'test string with a random :m_next parameter in it.');
 		$query->bindValue (2, 'another parameter');
 
-		$expected = "INSERT INTO `table` SET m_id = 1, m_test = 'test string with a random :m_next parameter in it.', m_next = 'another parameter'";
+		$expected = "INSERT INTO `table` SET m_id = '1', m_test = 'test string with a random :m_next parameter in it.', m_next = 'another parameter'";
 
 		$this->assertEquals ($expected, $query->getParsedQuery ());
 	}
@@ -302,7 +302,7 @@ class DbQueryTest extends TestCase
 		$query->bindValue (1, 'test string with a random :m_next parameter in it.');
 		$query->bindValue (2, 'another parameter');
 
-		$expected = "INSERT INTO `table` SET m_id = 1, m_test = 'test string with a random :m_next parameter in it.', m_next = 'another parameter'";
+		$expected = "INSERT INTO `table` SET m_id = '1', m_test = 'test string with a random :m_next parameter in it.', m_next = 'another parameter'";
 
 		$this->assertEquals ($expected, $query->getParsedQuery ());
 	}
@@ -322,7 +322,7 @@ class DbQueryTest extends TestCase
 		)->getParsedQuery();
 
 		$this->assertEquals(
-			'SELECT id FROM `tableName` WHERE id = 1 AND deleted_at IS NULL',
+			'SELECT id FROM `tableName` WHERE id = \'1\' AND deleted_at IS NULL',
 			$query
 		);
 	}
@@ -361,7 +361,7 @@ class DbQueryTest extends TestCase
 		}
 
 		$this->assertSame(
-			'SELECT id FROM `tableName` WHERE id = 1 AND deleted_at IS NULL',
+			'SELECT id FROM `tableName` WHERE id = \'1\' AND deleted_at IS NULL',
 			$query
 		);
 		$this->assertSame(
@@ -385,7 +385,7 @@ class DbQueryTest extends TestCase
 		)->getParsedQuery();
 
 		$this->assertEquals(
-			'INSERT INTO `tableName` SET id = 1, name = NULL',
+			'INSERT INTO `tableName` SET id = \'1\', name = NULL',
 			$query
 		);
 	}

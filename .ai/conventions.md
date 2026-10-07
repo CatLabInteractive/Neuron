@@ -19,6 +19,10 @@ Supported types: text, varchar, string, html, name, email, username, password, d
 - Use `Query` class for parameterized queries
 - Parameter types: `PARAM_STR`, `PARAM_NUMBER`, `PARAM_DATE`, `PARAM_POINT`
 - Supports named parameters (`:name`) and positional (`?`) placeholders
+- A value without a type is always written as a quoted string; use `PARAM_NUMBER` where SQL needs a bare number (`LIMIT ?`)
+- Builder tuples are validated: `[ value, type, nullOnEmpty ]` in SET, `[ value, type, comparator ]` in WHERE, with a `PARAM_*` type and a comparator out of `=`, `!=`, `NOT`, `<`, `>`, `<=`, `>=`, `LIKE`, `IN`. Anything else throws `InvalidParameter`
+- A list of values is only read as one inside a tuple: `[ $ids, Query::PARAM_NUMBER, 'IN' ]`
+- `Query::update()` and `Query::delete()` need at least one condition
 
 ## Testing
 - Tests extend `PHPUnit\Framework\TestCase`

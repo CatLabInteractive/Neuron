@@ -31,4 +31,31 @@ class DbExceptionTest extends TestCase
 		$this->assertSame ($original, $e->getPrevious ());
 		$this->assertTrue ($e->isDuplicateEntry ());
 	}
+
+	public function testConnectionFailedHasAFixedMessageAndKeepsTheCause ()
+	{
+		$e = DbException::connectionFailed ("Can't connect to MySQL server on 'db.internal'", 2002);
+
+		$this->assertSame ('Database connection failed.', $e->getMessage ());
+		$this->assertSame (DbException::CONNECTION_FAILED, $e->getMessage ());
+		$this->assertTrue ($e->isConnectionError ());
+		$this->assertSame (2002, $e->getErrorCode ());
+		$this->assertSame (2002, $e->getCode ());
+		$this->assertNull ($e->getQuery ());
+		$this->assertSame ("Can't connect to MySQL server on 'db.internal'", $e->getPrevious ()->getMessage ());
+		$this->assertSame (2002, $e->getPrevious ()->getCode ());
+	}
+
+	public function testConnectionFailedAcceptsANonNumericCode ()
+	{
+		$e = DbException::connectionFailed ('driver missing', 'HY000');
+
+		$this->assertSame (0, $e->getCode ());
+		$this->assertSame ('Database connection failed.', $e->getMessage ());
+	}
+
+	public function testOtherErrorsAreNotConnectionErrors ()
+	{
+		$this->assertFalse ((new DbException ('dup'))->setErrorCode (1062)->isConnectionError ());
+	}
 }
