@@ -16,35 +16,85 @@ class MySQL extends Database
 	private $connection;
 	
 	
+	/**
+	 * @throws DbException with a fixed message when the connection or its
+	 * charset cannot be set up. The driver's own error is the exception's
+	 * previous; nothing is printed.
+	 */
 	public function connect ()
 	{
-		if (!isset ($this->connection))
+		if (isset ($this->connection))
 		{
-			Logger::getInstance ()->log ('Connecting database.');
-			
-			try
-			{
-				$this->connection = new MySQLi
-				(
-					Config::get ('database.mysql.host'),
-					Config::get ('database.mysql.username'),
-					Config::get ('database.mysql.password'),
-					Config::get ('database.mysql.database')
-				);
+			return;
+		}
 
-				$this->connection->query ('SET names "' . Config::get ('database.mysql.charset') . '"');
-				//$this->connection->query ("SET time_zone = '+00:00'");
-			}
-			catch (Exception $e)
-			{
-				echo $e;
-			}
-			
-			if (mysqli_connect_errno ()) 
-			{
-				printf ("Connect failed: %s\n", mysqli_connect_error());
-				exit();
-			}
+		Logger::getInstance ()->log ('Connecting database.');
+
+		try
+		{
+			$connection = $this->openConnection ();
+			$this->applyCharset ($connection, Config::get ('database.mysql.charset'));
+		}
+		catch (\Throwable $e)
+		{
+			throw DbException::connectionFailed ($e->getMessage (), $e->getCode ());
+		}
+
+		$this->connection = $connection;
+	}
+
+	/**
+	 * Open the connection described by the database.mysql config.
+	 * @return mysqli
+	 * @throws \Throwable when the connection cannot be made.
+	 */
+	protected function openConnection ()
+	{
+		// Have mysqli throw, whatever the report mode: without it a failed
+		// connect raises a PHP warning that carries the host and the user.
+		$driver = new \mysqli_driver ();
+		$reportMode = $driver->report_mode;
+		mysqli_report (MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
+		try
+		{
+			$connection = new MySQLi
+			(
+				Config::get ('database.mysql.host'),
+				Config::get ('database.mysql.username'),
+				Config::get ('database.mysql.password'),
+				Config::get ('database.mysql.database')
+			);
+		}
+		finally
+		{
+			mysqli_report ($reportMode);
+		}
+
+		if ($connection->connect_errno)
+		{
+			throw new \RuntimeException ((string) $connection->connect_error, intval ($connection->connect_errno));
+		}
+
+		return $connection;
+	}
+
+	/**
+	 * Set the connection charset through the driver, so escaping uses it too.
+	 * @param mysqli $connection
+	 * @param string|null $charset nothing is set when empty
+	 * @throws \Throwable when the server rejects the charset.
+	 */
+	protected function applyCharset ($connection, $charset)
+	{
+		if ($charset === null || $charset === '')
+		{
+			return;
+		}
+
+		if (!$connection->set_charset ($charset))
+		{
+			throw new \RuntimeException ((string) $connection->error, intval ($connection->errno));
 		}
 	}
 
