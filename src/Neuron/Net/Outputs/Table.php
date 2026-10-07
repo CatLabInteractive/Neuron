@@ -20,7 +20,9 @@ class Table extends HTML {
 
 	private function printTable ($data, $var_dump = true)
 	{
-		header ('Content-type: text/html; charset=utf-8');
+		if (!headers_sent ()) {
+			header ('Content-type: text/html; charset=utf-8');
+		}
 
 		echo '<html>';
 		echo '<head>';
