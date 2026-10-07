@@ -333,18 +333,26 @@ class Query
 			}
 		}
 
-		// First we make a list with placeholders which we will later repalce with values
+		// Put a marker where each value goes, then swap all markers for
+		// their values in ONE pass. strtr() never looks at text it has
+		// already substituted, so nothing inside a value (not a '?', not a
+		// ':name', not marker-like text) can be taken for a placeholder.
+		// The markers also carry a random part, so a value cannot contain
+		// one in the first place.
+		$nonce = bin2hex (random_bytes (8));
+
 		$fakeValues = array ();
+		$replacements = array ();
 		foreach ($values as $k => $v) {
-			$fakeValues[$k] = '{{{ctlb-custom-placeholder-' . $k . '}}}';
+			$fakeValues[$k] = '{{{ctlb-' . $nonce . '-placeholder-' . $k . '}}}';
+			$replacements[$fakeValues[$k]] = (string) $v;
 		}
 
 		// And replace
 		$query = preg_replace ($keys, $fakeValues, $this->query, 1);
 
-		// And now replace the tokens with the actual values
-		foreach ($values as $k => $v) {
-			$query = str_replace ($fakeValues[$k], $v, $query);
+		if (count ($replacements) > 0) {
+			$query = strtr ($query, $replacements);
 		}
 
 		return $query;
