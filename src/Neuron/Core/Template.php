@@ -378,7 +378,14 @@ class Template
 
 		ob_start ();
 
-		$this->includeTemplate ($ctlbtmpltfiles[0], $this->getTemplateVariables ());
+		try {
+			$this->includeTemplate ($ctlbtmpltfiles[0], $this->getTemplateVariables ());
+		} catch (\Throwable $ctlbtmplterror) {
+			// Close our buffer before rethrowing, or it stays open and
+			// swallows everything the caller outputs afterwards.
+			ob_end_clean ();
+			throw $ctlbtmplterror;
+		}
 
 		$val = ob_get_contents();
 
@@ -441,10 +448,15 @@ class Template
 
 		$ctlbtmpltvars = $this->getTemplateVariables ($parameters);
 
-		if ($ctlbtmpltfiles = $this->getFilenames($template, true)) {
-			foreach ($ctlbtmpltfiles as $ctlbtmpltfile) {
-				$this->includeTemplate ($ctlbtmpltfile, $ctlbtmpltvars);
+		try {
+			if ($ctlbtmpltfiles = $this->getFilenames($template, true)) {
+				foreach ($ctlbtmpltfiles as $ctlbtmpltfile) {
+					$this->includeTemplate ($ctlbtmpltfile, $ctlbtmpltvars);
+				}
 			}
+		} catch (\Throwable $ctlbtmplterror) {
+			ob_end_clean();
+			throw $ctlbtmplterror;
 		}
 
 		$val = ob_get_contents();
@@ -465,10 +477,15 @@ class Template
 
 		$ctlbtmpltvars = $this->getTemplateVariables ($parameters);
 
-		if ($ctlbtmpltfiles = $this->getFilenames($template)) {
-			foreach ($ctlbtmpltfiles as $ctlbtmpltfile) {
-				$this->includeTemplate ($ctlbtmpltfile, $ctlbtmpltvars);
+		try {
+			if ($ctlbtmpltfiles = $this->getFilenames($template)) {
+				foreach ($ctlbtmpltfiles as $ctlbtmpltfile) {
+					$this->includeTemplate ($ctlbtmpltfile, $ctlbtmpltvars);
+				}
 			}
+		} catch (\Throwable $ctlbtmplterror) {
+			ob_end_clean();
+			throw $ctlbtmplterror;
 		}
 
 		$val = ob_get_contents();
