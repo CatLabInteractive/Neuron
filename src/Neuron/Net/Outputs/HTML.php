@@ -59,7 +59,9 @@ class HTML implements Output {
 		{
 			if (!is_string ($response->getData ()))
 			{
-				print_r ($response->getData ());
+				// A data structure shown in an HTML response is a dump of
+				// values, not markup.
+				echo htmlspecialchars (print_r ($response->getData (), true), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 			}
 
 			else

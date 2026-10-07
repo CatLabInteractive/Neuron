@@ -18,16 +18,25 @@ class PrintR extends HTML {
 		
 	}
 
+	/**
+	 * @param mixed $text
+	 * @return string
+	 */
+	private static function escape ($text)
+	{
+		return htmlspecialchars ((string) $text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+	}
+
 	public function outputContent (Response $response)
 	{
 		if (!is_string ($response->getData ()))
 		{
-			echo '<pre>' . print_r ($response->getData ()) . '<pre>';
+			echo '<pre>' . self::escape (print_r ($response->getData (), true)) . '</pre>';
 		}
 
 		else
 		{
-			echo $response->getData ();
+			echo '<pre>' . self::escape ($response->getData ()) . '</pre>';
 		}
 	}
 	
