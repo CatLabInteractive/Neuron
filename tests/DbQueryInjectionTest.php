@@ -174,14 +174,15 @@ $this->assertStringContainsString ("'3.14'", $sql);
 // PARAM_UNKNOWN — automatic type detection
 // ---------------------------------------------------------------
 
-public function testUnknownParamIntIsNotQuoted ()
+public function testUnknownParamIntIsQuoted ()
 {
+// An untyped value is always written as a quoted string, so that the
+// column decides how it is compared. PARAM_NUMBER writes a bare number.
 $query = new Query ("SELECT * FROM `t` WHERE id = ?");
 $query->bindValue (1, 5, Query::PARAM_UNKNOWN);
 $sql = $query->getParsedQuery ();
 
-$this->assertStringContainsString ("id = 5", $sql);
-$this->assertStringNotContainsString ("id = '5'", $sql);
+$this->assertStringContainsString ("id = '5'", $sql);
 }
 
 public function testUnknownParamStringInjection ()
@@ -773,13 +774,12 @@ $sql = $query->getParsedQuery ();
 $this->assertStringContainsString ("\\'", $sql);
 }
 
-public function testDeleteNoWhere ()
+public function testDeleteNoWhereThrows ()
 {
-$query = Query::delete ('t', array ());
-$sql = $query->getParsedQuery ();
-
-$this->assertStringStartsWith ("DELETE FROM `t`", $sql);
-$this->assertStringNotContainsString ("WHERE", $sql);
+// delete() needs at least one condition; emptying a table is written
+// as a query.
+$this->expectException (InvalidParameter::class);
+Query::delete ('t', array ());
 }
 
 // ---------------------------------------------------------------
