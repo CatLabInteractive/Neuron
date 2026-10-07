@@ -1,0 +1,1 @@
+<?php echo $this->combine ("hardening/value.phpt", array ("value" => $value)); ?>
