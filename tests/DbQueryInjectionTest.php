@@ -174,14 +174,15 @@ $this->assertStringContainsString ("'3.14'", $sql);
 // PARAM_UNKNOWN — automatic type detection
 // ---------------------------------------------------------------
 
-public function testUnknownParamIntIsNotQuoted ()
+public function testUnknownParamIntIsQuoted ()
 {
+// An untyped value is always written as a quoted string, so that the
+// column decides how it is compared. PARAM_NUMBER writes a bare number.
 $query = new Query ("SELECT * FROM `t` WHERE id = ?");
 $query->bindValue (1, 5, Query::PARAM_UNKNOWN);
 $sql = $query->getParsedQuery ();
 
-$this->assertStringContainsString ("id = 5", $sql);
-$this->assertStringNotContainsString ("id = '5'", $sql);
+$this->assertStringContainsString ("id = '5'", $sql);
 }
 
 public function testUnknownParamStringInjection ()
@@ -433,15 +434,60 @@ $this->assertStringContainsString ("\\'", $sql);
 // WHERE comparators
 // ---------------------------------------------------------------
 
-public function testWhereNotEqualsPrefix ()
+public function testWhereValueWithBangIsComparedAsIs ()
 {
 $query = Query::select ('t', array (), array (
 'status' => array ('!active', Query::PARAM_STR),
 ));
 $sql = $query->getParsedQuery ();
 
+$this->assertStringContainsString ("status = '!active'", $sql);
+$this->assertStringNotContainsString ("!=", $sql);
+}
+
+public function testPlainWhereValueWithBangIsComparedAsIs ()
+{
+$sql = Query::select ('t', array (), array ('token' => '!x'))->getParsedQuery ();
+
+$this->assertStringContainsString ("token = '!x'", $sql);
+$this->assertStringNotContainsString ("!=", $sql);
+}
+
+public function testUpdateAndDeleteCompareBangValuesAsIs ()
+{
+$update = Query::update ('t', array ('a' => 1), array ('token' => '!x'))->getParsedQuery ();
+$this->assertStringContainsString ("token = '!x'", $update);
+$this->assertStringNotContainsString ("!=", $update);
+
+$delete = Query::delete ('t', array ('token' => '!x'))->getParsedQuery ();
+$this->assertStringContainsString ("token = '!x'", $delete);
+$this->assertStringNotContainsString ("!=", $delete);
+}
+
+public function testLegacyNegationPrefixCanBeSwitchedOn ()
+{
+$this->assertFalse (Query::usesLegacyNegationPrefix ());
+
+Query::setLegacyNegationPrefix (true);
+try {
+$sql = Query::select ('t', array (), array (
+'status' => array ('!active', Query::PARAM_STR),
+))->getParsedQuery ();
+} finally {
+Query::setLegacyNegationPrefix (false);
+}
+
 $this->assertStringContainsString ("status != ", $sql);
 $this->assertStringContainsString ("'active'", $sql);
+}
+
+public function testExplicitNotEqualsStillWorks ()
+{
+$sql = Query::select ('t', array (), array (
+'status' => array ('active', Query::PARAM_STR, '!='),
+))->getParsedQuery ();
+
+$this->assertStringContainsString ("status != 'active'", $sql);
 }
 
 public function testWhereLike ()
@@ -728,13 +774,12 @@ $sql = $query->getParsedQuery ();
 $this->assertStringContainsString ("\\'", $sql);
 }
 
-public function testDeleteNoWhere ()
+public function testDeleteNoWhereThrows ()
 {
-$query = Query::delete ('t', array ());
-$sql = $query->getParsedQuery ();
-
-$this->assertStringStartsWith ("DELETE FROM `t`", $sql);
-$this->assertStringNotContainsString ("WHERE", $sql);
+// delete() needs at least one condition; emptying a table is written
+// as a query.
+$this->expectException (InvalidParameter::class);
+Query::delete ('t', array ());
 }
 
 // ---------------------------------------------------------------
@@ -858,5 +903,55 @@ $sql = $query->getParsedQuery ();
 
 // All dangerous single quotes must be escaped
 $this->assertGreaterThanOrEqual (3, substr_count ($sql, "\\'"));
+}
+
+// ---------------------------------------------------------------
+// Values are substituted in one pass
+// ---------------------------------------------------------------
+
+public function testValueContainingOldMarkerOfLaterValueStaysLiteral ()
+{
+$query = new Query ("SELECT * FROM t WHERE a = ? AND b = ?");
+$query->bindValue (1, 'x {{{ctlb-custom-placeholder-1}}} y', Query::PARAM_STR);
+$query->bindValue (2, 'second', Query::PARAM_STR);
+$sql = $query->getParsedQuery ();
+
+$this->assertSame (
+"SELECT * FROM t WHERE a = 'x {{{ctlb-custom-placeholder-1}}} y' AND b = 'second'",
+$sql
+);
+}
+
+public function testBuilderValueContainingOldMarkerStaysLiteral ()
+{
+$sql = Query::select ('t', array (), array (
+'a' => array ('{{{ctlb-custom-placeholder-1}}}', Query::PARAM_STR),
+'b' => array ('second', Query::PARAM_STR),
+))->getParsedQuery ();
+
+$this->assertSame (
+"SELECT * FROM `t` WHERE a = '{{{ctlb-custom-placeholder-1}}}' AND b = 'second'",
+$sql
+);
+}
+
+public function testLaterValueIsNeverSubstitutedIntoEarlierValue ()
+{
+$query = new Query ("SELECT * FROM t WHERE a = :a AND b = :b");
+$query->bindValue ('a', '{{{ctlb-custom-placeholder-b}}}', Query::PARAM_STR);
+$query->bindValue ('b', 'second', Query::PARAM_STR);
+$sql = $query->getParsedQuery ();
+
+$this->assertSame (1, substr_count ($sql, "'second'"));
+$this->assertStringContainsString ("a = '{{{ctlb-custom-placeholder-b}}}'", $sql);
+}
+
+public function testMarkersDifferBetweenQueries ()
+{
+$reflection = new \ReflectionClass (Query::class);
+$source = file_get_contents ($reflection->getFileName ());
+
+$this->assertStringContainsString ('random_bytes', $source);
+$this->assertStringNotContainsString ("'{{{ctlb-custom-placeholder-'", $source);
 }
 }
