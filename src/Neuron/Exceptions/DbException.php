@@ -10,7 +10,12 @@ class DbException
 	/** MySQL error number for a UNIQUE / PRIMARY KEY violation. */
 	const DUPLICATE_ENTRY = 1062;
 
+	/** The message of every connection failure; it never carries driver detail. */
+	const CONNECTION_FAILED = 'Database connection failed.';
+
 	private $query;
+
+	private $connectionError = false;
 
 	private $mysqlErrorCode;
 
@@ -27,6 +32,38 @@ class DbException
 		$ex->setErrorCode ($e->getCode ());
 		$ex->setQuery ($query);
 		return $ex;
+	}
+
+	/**
+	 * The connection (or its charset) could not be set up. The message is
+	 * fixed; what the driver reported is kept as the previous exception, for
+	 * logging only: it can name the host and the user.
+	 * @param string $driverMessage
+	 * @param int|string $driverCode
+	 * @return DbException
+	 */
+	public static function connectionFailed ($driverMessage, $driverCode = 0)
+	{
+		$code = is_numeric ($driverCode) ? intval ($driverCode) : 0;
+
+		// A new exception rather than the driver's own: its stack trace does
+		// not hold the arguments of the connect call.
+		$cause = new \RuntimeException ((string) $driverMessage, $code);
+
+		$ex = new self (self::CONNECTION_FAILED, $code, $cause);
+		$ex->setErrorCode ($code);
+		$ex->connectionError = true;
+		return $ex;
+	}
+
+	/**
+	 * True when the connection could not be set up, as opposed to a
+	 * statement that failed.
+	 * @return bool
+	 */
+	public function isConnectionError ()
+	{
+		return $this->connectionError;
 	}
 
 	/**
