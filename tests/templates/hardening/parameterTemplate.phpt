@@ -1,0 +1,1 @@
+<?php echo $this->template ("hardening/value.phpt", array ($name => $injected)); ?>
