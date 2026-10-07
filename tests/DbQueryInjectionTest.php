@@ -433,15 +433,60 @@ $this->assertStringContainsString ("\\'", $sql);
 // WHERE comparators
 // ---------------------------------------------------------------
 
-public function testWhereNotEqualsPrefix ()
+public function testWhereValueWithBangIsComparedAsIs ()
 {
 $query = Query::select ('t', array (), array (
 'status' => array ('!active', Query::PARAM_STR),
 ));
 $sql = $query->getParsedQuery ();
 
+$this->assertStringContainsString ("status = '!active'", $sql);
+$this->assertStringNotContainsString ("!=", $sql);
+}
+
+public function testPlainWhereValueWithBangIsComparedAsIs ()
+{
+$sql = Query::select ('t', array (), array ('token' => '!x'))->getParsedQuery ();
+
+$this->assertStringContainsString ("token = '!x'", $sql);
+$this->assertStringNotContainsString ("!=", $sql);
+}
+
+public function testUpdateAndDeleteCompareBangValuesAsIs ()
+{
+$update = Query::update ('t', array ('a' => 1), array ('token' => '!x'))->getParsedQuery ();
+$this->assertStringContainsString ("token = '!x'", $update);
+$this->assertStringNotContainsString ("!=", $update);
+
+$delete = Query::delete ('t', array ('token' => '!x'))->getParsedQuery ();
+$this->assertStringContainsString ("token = '!x'", $delete);
+$this->assertStringNotContainsString ("!=", $delete);
+}
+
+public function testLegacyNegationPrefixCanBeSwitchedOn ()
+{
+$this->assertFalse (Query::usesLegacyNegationPrefix ());
+
+Query::setLegacyNegationPrefix (true);
+try {
+$sql = Query::select ('t', array (), array (
+'status' => array ('!active', Query::PARAM_STR),
+))->getParsedQuery ();
+} finally {
+Query::setLegacyNegationPrefix (false);
+}
+
 $this->assertStringContainsString ("status != ", $sql);
 $this->assertStringContainsString ("'active'", $sql);
+}
+
+public function testExplicitNotEqualsStillWorks ()
+{
+$sql = Query::select ('t', array (), array (
+'status' => array ('active', Query::PARAM_STR, '!='),
+))->getParsedQuery ();
+
+$this->assertStringContainsString ("status != 'active'", $sql);
 }
 
 public function testWhereLike ()

@@ -25,6 +25,39 @@ class Query
 	private $values = array ();
 
 	/**
+	 * @var bool
+	 */
+	private static $legacyNegationPrefix = false;
+
+	/**
+	 * Before 3.3.1 a WHERE value starting with '!' turned the comparison into
+	 * `!=` and lost its first character. A value that came from outside the
+	 * application could therefore change what a query matched, so the value
+	 * is now always compared as it is.
+	 *
+	 * To negate a comparison, pass the comparator as the third element:
+	 * `array($value, Query::PARAM_STR, '!=')`.
+	 *
+	 * A project that still relies on the prefix can switch it back on here
+	 * until its queries are migrated. Do not switch it on where WHERE values
+	 * can come from a request.
+	 *
+	 * @param bool $enabled
+	 */
+	public static function setLegacyNegationPrefix($enabled)
+	{
+		self::$legacyNegationPrefix = (bool) $enabled;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public static function usesLegacyNegationPrefix()
+	{
+		return self::$legacyNegationPrefix;
+	}
+
+	/**
 	 * Generate an insert query
 	 * @param string $table: table to insert data to
 	 * @param mixed[] $set: a 2 dimensional array with syntax: { column_name : [ value, type, nullOnEmpty ]}
@@ -137,13 +170,14 @@ class Query
 					$tmp = array($v, self::PARAM_UNKNOWN);
 				}
 
-                // Parse comparators. Guard null before substr(): a null WHERE
-                // value has no '!'/comparator prefix and is handled by the
-                // `$tmp[0] === null` -> `IS NULL` branch below; calling
-                // substr(null, ...) here would emit a PHP 8.5 deprecation
-                // ("Passing null to parameter #1 ($string)") for every null
-                // value before that branch is ever reached.
-				if ($tmp[0] !== null && !is_array($tmp[0]) && substr($tmp[0], 0, 1) === '!') {
+                // Parse comparators. A value is data and never selects the
+                // comparator: only the third element does ('NOT', '!=', ...).
+                // The legacy '!' value prefix is honoured only when a project
+                // has switched it on (see setLegacyNegationPrefix()), and then
+                // only for strings: a null WHERE value is handled by the
+                // `$tmp[0] === null` -> `IS NULL` branch below, and calling
+                // substr(null, ...) would emit a PHP 8.5 deprecation.
+				if (self::$legacyNegationPrefix && is_string($tmp[0]) && substr($tmp[0], 0, 1) === '!') {
 					$query .= $k . ' != ? AND ';
 					$tmp[0] = substr($tmp[0], 1);
 				} elseif (isset($tmp[2]) && strtoupper($tmp[2]) === 'LIKE') {
