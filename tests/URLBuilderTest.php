@@ -56,4 +56,19 @@ class URLBuilderTest extends TestCase
 		$url = URLBuilder::getURL ('page', array ('name' => 'John Doe'), true, 'http://example.com/');
 		$this->assertStringContainsString ('name=John+Doe', $url);
 	}
+
+	public function testGetURLNullParamIsEmpty ()
+	{
+		// A null value is sent as an empty value, as it always was; PHP 8.1+
+		// deprecates passing null to urlencode() itself.
+		set_error_handler (function ($severity, $message, $file, $line) {
+			throw new \ErrorException ($message, 0, $severity, $file, $line);
+		});
+		try {
+			$url = URLBuilder::getURL ('myaccount', array ('focus' => null, 'accountReturn' => 'x'), true, 'http://example.com/');
+		} finally {
+			restore_error_handler ();
+		}
+		$this->assertEquals ('http://example.com/myaccount?focus=&accountReturn=x', $url);
+	}
 }
